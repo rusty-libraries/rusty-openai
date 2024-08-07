@@ -2,7 +2,7 @@
 name = "rusty-openai"
 description = "An unofficial OpenAI wrapper that supports image inputs"
 license-file = "LICENSE.md"
-documentation = "docs/README.md"
+documentation = "https://pleaseful.github.io/rusty-openai/"
 readme = "README.md"
 homepage = "https://github.com/pleaseful/rusty-openai"
 version = "0.1.0"

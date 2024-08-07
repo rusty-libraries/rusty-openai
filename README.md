@@ -86,7 +86,7 @@ This simple example demonstrates how to generate chat completions using the SDK.
 
 ## Documentation
 
-For detailed information on all the available endpoints and their respective methods, please refer to the full [SDK Documentation](docs.md).
+For detailed information on all the available endpoints and their respective methods, please refer to the full [SDK Documentation](https://pleaseful.github.io/rusty-openai/).
 
 ## License
 
