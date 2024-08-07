@@ -90,7 +90,7 @@ For detailed information on all the available endpoints and their respective met
 
 ## License
 
-This SDK is licensed under the MIT License. For more details, see the [LICENSE](LICENSE) file.
+This SDK is licensed under the MIT License. For more details, see the [LICENSE](LICENSE.md) file.
 
 ## NOTE
 
