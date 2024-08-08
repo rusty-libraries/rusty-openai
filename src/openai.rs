@@ -6,7 +6,10 @@ use crate::openai_api::{
     audio::AudioApi,
     images::ImagesApi,
     fine_tuning::FineTuningApi,
-    moderations::ModerationApi
+    moderations::ModerationApi,
+    assistants::AssistantsApi,
+    threads::ThreadsApi,
+    vectors::VectorsApi,
 };
 
 pub struct OpenAI {
@@ -57,5 +60,17 @@ impl OpenAI {
 
     pub fn embeddings(&self) -> EmbeddingsApi {
         EmbeddingsApi::new(&self.client, &self.base_url)
+    }
+
+    pub fn assistants(&self) -> AssistantsApi {
+        AssistantsApi::new(&self.client, &self.base_url)
+    }
+
+    pub fn threads(&self) -> ThreadsApi {
+        ThreadsApi::new(&self.client, &self.base_url)
+    }
+
+    pub fn vectors(&self) -> VectorsApi {
+        VectorsApi::new(&self.client, &self.base_url)
     }
 }

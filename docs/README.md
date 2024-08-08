@@ -8,7 +8,7 @@ Before using the SDK, make sure you have the following dependencies added to you
 
 ```toml
 [dependencies]
-rusty_openai = "0.1.0"
+rusty_openai = "0.1.5"
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json", "multipart"] }
@@ -91,208 +91,469 @@ pub async fn create(&self, request: ChatCompletionRequest) -> Result<Value, Open
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
 
-#### Images API
+#### Assistants API
 
-**Generate Image**
+**Create An Assistant**
 
-Generate an image based on the provided prompt and parameters:
+Create an assistant with the specified parameters:
 
 ```rust
-pub async fn generate(
+pub async fn create(&self, request: AssistantRequest) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `request`: `AssistantRequest`
+    - Contains fields like `model`, `name`, `description`, `instructions`, `tools`, `temperature`, etc.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**List Assistants**
+
+List all assistants:
+
+```rust
+pub async fn list(&self, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `limit`: Optional maximum number of assistants to retrieve.
+  - `order`: Optional order to return the results.
+  - `after`: Optional cursor to use for pagination.
+  - `before`: Optional cursor to use for pagination.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Retrieve Assistant**
+
+Retrieve information about a specific assistant:
+
+```rust
+pub async fn retrieve(&self, assistant_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `assistant_id`: The ID of the assistant to retrieve.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Modify Assistant**
+
+Modify an existing assistant with the provided parameters:
+
+```rust
+pub async fn modify(&self, assistant_id: &str, request: AssistantRequest) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `assistant_id`: The ID of the assistant to modify.
+  - `request`: `AssistantRequest`
+    - Contains fields like `name`, `description`, `instructions`, `tools`, `temperature`, etc.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Delete Assistant**
+
+Delete an assistant using the provided ID:
+
+```rust
+pub async fn delete(&self, assistant_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `assistant_id`: The ID of the assistant to delete.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+
+#### Threads API
+
+**Create A Thread**
+
+Create a new conversation thread with the specified parameters:
+
+```rust
+pub async fn create(&self, request: ThreadRequest) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `request`: `ThreadRequest`
+    - Contains fields like `messages`, `tool_resources`, and `metadata`.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Retrieve Thread**
+
+Retrieve information about a specific thread:
+
+```rust
+pub async fn retrieve(&self, thread_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to retrieve.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Modify Thread**
+
+Modify an existing thread with the provided parameters:
+
+```rust
+pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to modify.
+  - `request`: `ThreadRequest`
+    - Contains fields like `tool_resources` and `metadata`.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Delete Thread**
+
+Delete a thread using the provided ID:
+
+```rust
+pub async fn delete(&self, thread_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to delete.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Create Message**
+
+Add a message to an existing thread:
+
+```rust
+pub async fn create_message(&self, thread_id: &str, role: &str, content: Value, attachments: Option<Value>, metadata: Option<Value>) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to add a message to.
+  - `role`: The role of the sender of the message.
+  - `content`: The content of the message.
+  - `attachments`: Optional attachments for the message.
+  - `metadata`: Optional metadata for the message.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**List Messages**
+
+List all messages in a thread:
+
+```rust
+pub async fn list_messages(&self, thread_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to list messages from.
+  - `limit`: Optional maximum number of messages to retrieve.
+  - `order`: Optional order to return the results.
+  - `after`: Optional cursor to use for pagination.
+  - `before`: Optional cursor to use for pagination.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Retrieve Message**
+
+Retrieve a specific message from a thread:
+
+```rust
+pub async fn retrieve_message(&self, thread_id: &str, message_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to retrieve the message from.
+  - `message_id`: The ID of the message to retrieve.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Modify Message**
+
+Modify an existing message in a thread:
+
+```rust
+pub async fn modify_message(&self, thread_id: &str, message_id: &str, metadata: Value) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to modify the message in.
+  - `message_id`: The ID of the message to modify.
+  - `metadata`: The metadata to update in the message.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Delete Message**
+
+Delete a specific message from a thread:
+
+```rust
+pub async fn delete_message(&self, thread_id: &str, message_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to delete the message from.
+  - `message_id`: The ID of the message to delete.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Create Run**
+
+Create a run for a specific assistant in a thread:
+
+```rust
+pub async fn create_run(
     &self,
-    prompt: &str,
-    model: &str,
-    size: Option<&str>,
-    response_format: Option<&str>,
-    n: Option<u64>,
-    user: Option<&str>
+    thread_id: &str,
+    assistant_id: &str,
+    model: Option<&str>,
+    instructions: Option<&str>,
+    additional_instructions: Option<&str>,
+    additional_messages: Option<Vec<Value>>,
+    tools: Option<Vec<Value>>,
+    metadata: Option<Value>,
+    temperature: Option<f64>,
+    top_p: Option<f64>,
+    stream: Option<bool>,
+    max_prompt_tokens: Option<u32>,
+    max_completion_tokens: Option<u32>,
+    truncation_strategy: Option<Value>,
+    tool_choice: Option<Value>,
+    parallel_tool_calls: Option<bool>,
+    response_format: Option<Value>,
 ) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `prompt`: The text prompt to generate the image from.
-  - `model`: The name of the model to use for generating the image.
-  - `size`: Optional size of the image.
-  - `response_format`: Optional response format (e.g., `json`, `url`).
-  - `n`: Optional number of images to generate.
-  - `user`: Optional user ID.
+  - `thread_id`: The ID of the thread to create the run in.
+  - `assistant_id`: The ID of the assistant to use for the run.
+  - Optional parameters including `model`, `instructions`, `additional_instructions`, `additional_messages`, `tools`, `metadata`, `temperature`, `top_p`, `stream`, `max_prompt_tokens`, `max_completion_tokens`, `truncation_strategy`, `tool_choice`, `parallel_tool_calls`, and `response_format`.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
+**List Runs**
 
-**Edit Image**
-
-Edit an existing image using the provided parameters and mask:
+List all runs in a thread:
 
 ```rust
-pub async fn edit(
-    &self,
-    model: &str,
-    image_path: &str,
-    mask_path: &str,
-    prompt: &str,
-    size: Option<&str>,
-    response_format: Option<&str>,
-    n: Option<u64>,
-    user: Option<&str>
-) -> Result<Value, OpenAIError>
+pub async fn list_runs(&self, thread_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `model`: The model to use for editing the image.
-  - `image_path`: Local file path to the image.
-  - `mask_path`: Local file path to the mask.
-  - `prompt`: The text prompt to guide the editing.
-  - `size`: Optional size of the edited image.
-  - `response_format`: Optional response format (e.g., `json`, `url`).
-  - `n`: Optional number of edited images to generate.
-  - `user`: Optional user ID.
+  - `thread_id`: The ID of the thread to list runs from.
+  - `limit`: Optional maximum number of runs to retrieve.
+  - `order`: Optional order to return the results.
+  - `after`: Optional cursor to use for pagination.
+  - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
+**Retrieve Run**
 
-**Create Image Variation**
-
-Create variations of an existing image using the provided parameters:
+Retrieve a specific run from a thread:
 
 ```rust
-pub async fn variation(
-    &self,
-    model: &str,
-    image_path: &str,
-    size: Option<&str>,
-    response_format: Option<&str>,
-    n: Option<u64>,
-    user: Option<&str>
-) -> Result<Value, OpenAIError>
+pub async fn retrieve_run(&self, thread_id: &str, run_id: &str) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `model`: The model to use for generating variations.
-  - `image_path`: Local file path to the image.
-  - `size`: Optional size of the variation images.
-  - `response_format`: Optional response format (e.g., `json`, `url`).
-  - `n`: Optional number of variation images to generate.
-  - `user`: Optional user ID.
+  - `thread_id`: The ID of the thread to retrieve the run from.
+  - `run_id`: The ID of the run to retrieve.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
+**Modify Run**
 
-#### Moderation API
-
-**Submit Text for Moderation**
-
-Submit text input for moderation:
+Modify an existing run in a thread:
 
 ```rust
-pub async fn moderate(
-    &self,
-    input: &str,
-    model: Option<&str>
-) -> Result<Value, OpenAIError>
+pub async fn modify_run(&self, thread_id: &str, run_id: &str, metadata: Value) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `input`: The text input to be moderated.
-  - `model`: Optional name of the moderation model to use.
+  - `thread_id`: The ID of the thread to modify the run in.
+  - `run_id`: The ID of the run to modify.
+  - `metadata`: The metadata to update in the run.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
+**Delete Run**
 
-#### Fine-Tuning API
-
-**Create Fine-Tuning Job**
-
-Create a new fine-tuning job with the specified parameters:
+Delete a specific run from a thread:
 
 ```rust
-pub async fn create_fine_tuning_job(
-    &self,
-    model: &str,
-    training_file: &str,
-    validation_file: Option<&str>,
-    n_epochs: Option<u32>,
-    batch_size: Option<u32>,
-    learning_rate_multiplier: Option<f64>,
-    prompt_loss_weight: Option<f64>,
-    compute_classification_metrics: Option<bool>,
-    classification_n_classes: Option<u32>,
-    classification_positive_class: Option<&str>,
-    classification_betas: Option<Vec<f64>>
-) -> Result<Value, OpenAIError>
+pub async fn delete_run(&self, thread_id: &str, run_id: &str) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `model`: The model to be fine-tuned.
-  - `training_file`: The file containing training data.
-  - `validation_file`: Optional validation data file.
-  - `n_epochs`: Optional number of training epochs.
-  - `batch_size`: Optional batch size for training.
-  - `learning_rate_multiplier`: Optional learning rate multiplier.
-  - `prompt_loss_weight`: Optional weight for the prompt loss.
-  - `compute_classification_metrics`: Optional flag to compute classification metrics.
-  - `classification_n_classes`: Optional number of classes for classification.
-  - `classification_positive_class`: Optional positive class for classification.
-  - `classification_betas`: Optional betas for classification metrics.
+  - `thread_id`: The ID of the thread to delete the run from.
+  - `run_id`: The ID of the run to delete.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
+**Submit Tool Outputs**
 
-**List Fine-Tuning Jobs**
-
-List all fine-tuning jobs:
-
-```rust
-pub async fn list_fine_tuning_jobs(&self) -> Result<Value, OpenAIError>
-```
-
-- **Returns:**
-  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-
-**Retrieve Fine-Tuning Job**
-
-Retrieve information about a specific fine-tuning job:
+Submit tool outputs for a run in a thread:
 
 ```rust
-pub async fn retrieve_fine_tuning_job(&self, job_id: &str) -> Result<Value, OpenAIError>
+pub async fn submit_tool_outputs(&self, thread_id: &str, run_id: &str, tool_outputs: Vec<Value>, stream: Option<bool>) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `job_id`: The ID of the fine-tuning job to retrieve.
+  - `thread_id`: The ID of the thread to submit tool outputs for.
+  - `run_id`: The ID of the run to submit tool outputs for.
+  - `tool_outputs`: The tool outputs to submit.
+  - `stream`: Optional flag to stream the tool outputs.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Cancel Run**
+
+Cancel a specific run in a thread:
+
+```rust
+pub async fn cancel_run(&self, thread_id: &str, run_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to cancel the run in.
+  - `run_id`: The ID of the run to cancel.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**List Run Steps**
+
+List all steps of a specific run in a thread:
+
+```rust
+pub async fn list_run_steps(&self, thread_id: &str, run_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to list run steps from.
+  - `run_id`: The ID of the run to list steps from.
+  - `limit`: Optional maximum number of steps to retrieve.
+  - `order`: Optional order to return the results.
+  - `after`: Optional cursor to use for pagination.
+  - `before`: Optional cursor to use for pagination.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Retrieve Run Step**
+
+Retrieve a specific step from a run in a thread:
+
+```rust
+pub async fn retrieve_run_step(&self, thread_id: &str, run_id: &str, step_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `thread_id`: The ID of the thread to retrieve the run step from.
+  - `run_id`: The ID of the run to retrieve the step from.
+  - `step_id`: The ID of the step to retrieve.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
 
 
-#### Embeddings API
+#### Vectors API
 
-**Create Embedding**
+**Create Vector Store**
 
-Create an embedding using the provided parameters:
+Create a vector store with the specified parameters:
 
 ```rust
-pub async fn create(
-    &self,
-    input: &str,
-    model: &str,
-    encoding_format: Option<&str>,
-    dimensions: Option<u64>,
-    user: Option<&str>
-) -> Result<Value, OpenAIError>
+pub async fn create_vector_store(&self, request: VectorStoreRequest) -> Result<Value, OpenAIError>
 ```
 
 - **Parameters:**
-  - `input`: The input text for which to create embeddings.
-  - `model`: The name of the model to use for creating embeddings.
-  - `encoding_format`: Optional encoding format.
-  - `dimensions`: Optional number of dimensions for the embeddings.
-  - `user`: Optional user ID.
+  - `request`: `VectorStoreRequest`
+    - Contains fields like `file_ids`, `name`, `expires_after`, `chunking_strategy`, and `metadata`.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**List Vector Stores**
+
+List all vector stores:
+
+```rust
+pub async fn list_vector_stores(&self, limit: Option<u64>, order: Option<String >, after: Option<String>, before: Option<String>) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `limit`: Optional maximum number of vector stores to retrieve.
+  - `order`: Optional order to return the results.
+  - `after`: Optional cursor to use for pagination.
+  - `before`: Optional cursor to use for pagination.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Retrieve Vector Store**
+
+Retrieve information about a specific vector store:
+
+```rust
+pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `vector_store_id`: The ID of the vector store to retrieve.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Modify Vector Store**
+
+Modify an existing vector store with the provided parameters:
+
+```rust
+pub async fn modify_vector_store(&self, vector_store_id: &str, request: VectorStoreRequest) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `vector_store_id`: The ID of the vector store to modify.
+  - `request`: `VectorStoreRequest`
+    - Contains fields like `name`, `expires_after`, and `metadata`.
+
+- **Returns:**
+  - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
+
+**Delete Vector Store**
+
+Delete a vector store using the provided ID:
+
+```rust
+pub async fn delete_vector_store(&self, vector_store_id: &str) -> Result<Value, OpenAIError>
+```
+
+- **Parameters:**
+  - `vector_store_id`: The ID of the vector store to delete.
 
 - **Returns:**
   - `Result<Value, OpenAIError>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.

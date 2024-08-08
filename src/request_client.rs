@@ -29,4 +29,11 @@ impl RequestClient {
             .send()
             .await
     }
+
+    pub async fn delete(&self, url: &str) -> Result<Response, Error> {
+        self.client.delete(url)
+            .header("Authorization", format!("Bearer {}", self.api_key))
+            .send()
+            .await
+    }
 }

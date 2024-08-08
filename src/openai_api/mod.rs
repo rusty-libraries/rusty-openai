@@ -5,3 +5,6 @@ pub mod images;
 pub mod fine_tuning;
 pub mod moderations;
 pub mod embeddings;
+pub mod assistants;
+pub mod threads;
+pub mod vectors;

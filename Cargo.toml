@@ -5,7 +5,7 @@ license-file = "LICENSE.md"
 documentation = "https://pleaseful.github.io/rusty-openai/"
 readme = "README.md"
 homepage = "https://github.com/pleaseful/rusty-openai"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2021"
 
 [dependencies]
