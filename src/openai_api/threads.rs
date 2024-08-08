@@ -2,18 +2,21 @@ use crate::request_client::RequestClient;
 use crate::error_handling::OpenAIError;
 use serde_json::{json, Value};
 
+/// ThreadsApi struct to interact with thread management endpoints of the API.
 pub struct ThreadsApi<'a> {
-    client: &'a RequestClient,
-    base_url: &'a str,
+    client: &'a RequestClient,  // Reference to the HTTP client
+    base_url: &'a str,          // Base URL for the API
 }
 
+/// Struct representing a request to create or modify a thread.
 pub struct ThreadRequest {
-    messages: Option<Vec<Value>>,
-    tool_resources: Option<Value>,
-    metadata: Option<Value>,
+    messages: Option<Vec<Value>>,        // Optional list of messages in the thread
+    tool_resources: Option<Value>,       // Optional tool resources related to the thread
+    metadata: Option<Value>,             // Optional metadata associated with the thread
 }
 
 impl ThreadRequest {
+    /// Create a new instance of ThreadRequest with default empty fields.
     pub fn new() -> Self {
         ThreadRequest {
             messages: None,
@@ -22,16 +25,19 @@ impl ThreadRequest {
         }
     }
 
+    /// Set messages for the thread.
     pub fn messages(mut self, messages: Vec<Value>) -> Self {
         self.messages = Some(messages);
         self
     }
 
+    /// Set tool resources for the thread.
     pub fn tool_resources(mut self, tool_resources: Value) -> Self {
         self.tool_resources = Some(tool_resources);
         self
     }
 
+    /// Set metadata for the thread.
     pub fn metadata(mut self, metadata: Value) -> Self {
         self.metadata = Some(metadata);
         self
@@ -39,10 +45,21 @@ impl ThreadRequest {
 }
 
 impl<'a> ThreadsApi<'a> {
+    /// Create a new instance of ThreadsApi.
     pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
         ThreadsApi { client, base_url }
     }
 
+    /// Create a new thread with the provided request parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - A ThreadRequest containing the parameters for the new thread.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn create(&self, request: ThreadRequest) -> Result<Value, OpenAIError> {
         let url = format!("{}/threads", self.base_url);
         let mut body = serde_json::Map::new();
@@ -62,6 +79,16 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Retrieve the details of a specific thread by its ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to be retrieved.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn retrieve(&self, thread_id: &str) -> Result<Value, OpenAIError> {
         let url = format!("{}/threads/{}", self.base_url, thread_id);
         let response = self.client.get(&url).await?;
@@ -69,6 +96,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Modify an existing thread's details using the provided request parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to be modified.
+    /// * `request` - A ThreadRequest containing the modification parameters.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> Result<Value, OpenAIError> {
         let url = format!("{}/threads/{}", self.base_url, thread_id);
         let mut body = serde_json::Map::new();
@@ -85,6 +123,16 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Delete a specific thread by its ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to be deleted.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn delete(&self, thread_id: &str) -> Result<Value, OpenAIError> {
         let url = format!("{}/threads/{}", self.base_url, thread_id);
         let response = self.client.delete(&url).await?;
@@ -92,6 +140,20 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Create a new message in a specific thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to add a message to.
+    /// * `role` - The role of the message sender.
+    /// * `content` - The content of the message.
+    /// * `attachments` - Optional attachments for the message.
+    /// * `metadata` - Optional metadata for the message.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn create_message(
         &self,
         thread_id: &str,
@@ -119,6 +181,20 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// List messages in a specific thread with optional filters.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to list messages from.
+    /// * `limit` - Optional limit on the number of messages to list.
+    /// * `order` - Optional order parameter for the message listing.
+    /// * `after` - Optional parameter to list messages after a specific time.
+    /// * `before` - Optional parameter to list messages before a specific time.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn list_messages(
         &self,
         thread_id: &str,
@@ -152,6 +228,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Retrieve a specific message by its ID from a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to retrieve the message from.
+    /// * `message_id` - The ID of the message to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn retrieve_message(
         &self,
         thread_id: &str,
@@ -163,6 +250,18 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Modify a specific message's metadata in a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the message.
+    /// * `message_id` - The ID of the message to modify.
+    /// * `metadata` - The new metadata to apply to the message.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn modify_message(
         &self,
         thread_id: &str,
@@ -179,6 +278,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Delete a specific message by its ID in a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the message.
+    /// * `message_id` - The ID of the message to delete.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn delete_message(
         &self,
         thread_id: &str,
@@ -190,6 +300,16 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Create and initiate a run in a specific thread with specified parameters.
+    ///
+    /// # Arguments
+    ///
+    /// * Various parameters used to customize the creation of the run.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn create_run(
         &self,
         thread_id: &str,
@@ -266,6 +386,20 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// List runs within a specific thread with optional filters.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread to list runs from.
+    /// * `limit` - Optional limit on the number of runs to list.
+    /// * `order` - Optional order parameter for the run listing.
+    /// * `after` - Optional parameter to list runs after a specific time.
+    /// * `before` - Optional parameter to list runs before a specific time.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn list_runs(
         &self,
         thread_id: &str,
@@ -299,6 +433,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Retrieve details of a specific run by its ID.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn retrieve_run(
         &self,
         thread_id: &str,
@@ -310,6 +455,18 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Modify a specific run's metadata in a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to modify.
+    /// * `metadata` - The new metadata to apply to the run.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn modify_run(
         &self,
         thread_id: &str,
@@ -326,6 +483,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Delete a specific run by its ID in a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to delete.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn delete_run(
         &self,
         thread_id: &str,
@@ -337,6 +505,19 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Submit tool outputs for a specific run.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to submit outputs to.
+    /// * `tool_outputs` - List of tool outputs to submit.
+    /// * `stream` - Optional stream parameter for the submission.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn submit_tool_outputs(
         &self,
         thread_id: &str,
@@ -358,6 +539,17 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Cancel a specific run by its ID in a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to cancel.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn cancel_run(
         &self,
         thread_id: &str,
@@ -369,6 +561,21 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
     
+    /// List steps for a specific run within a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run to list steps from.
+    /// * `limit` - Optional limit on the number of steps to list.
+    /// * `order` - Optional order parameter for the steps listing.
+    /// * `after` - Optional parameter to list steps after a specific time.
+    /// * `before` - Optional parameter to list steps before a specific time.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn list_run_steps(
         &self,
         thread_id: &str,
@@ -403,6 +610,18 @@ impl<'a> ThreadsApi<'a> {
         Ok(json)
     }
 
+    /// Retrieve a specific step by its ID from a run within a thread.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - The ID of the thread containing the run.
+    /// * `run_id` - The ID of the run containing the step.
+    /// * `step_id` - The ID of the step to retrieve.
+    ///
+    /// # Returns
+    ///
+    /// A Result containing the JSON response as `serde_json::Value` on success,
+    /// or an OpenAIError on failure.
     pub async fn retrieve_run_step(
         &self,
         thread_id: &str,
