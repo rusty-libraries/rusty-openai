@@ -52,10 +52,12 @@ To generate chat completions, create a `ChatCompletionRequest` object and call t
 use rusty_openai::openai::OpenAI;
 use rusty_openai::openai_api::completion::ChatCompletionRequest;
 use serde_json::json;
+use std::env;
 
 #[tokio::main]
 async fn main() {
-    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+    let api_key = env::var("OPENAI_API_KEY").expect("API key not set");
+    let openai = OpenAI::new(&api_key, "https://api.openai.com/v1");
 
     let messages = vec![
         json!({
