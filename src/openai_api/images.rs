@@ -1,26 +1,38 @@
-use crate::request_client::RequestClient;
-use crate::error_handling::OpenAIError;
-use serde_json::{json, Value};
+use crate::{error_handling::OpenAIResult, extend_form_text_fields, openai::OpenAI};
 use reqwest::multipart;
-use tokio::io::AsyncReadExt;
+use serde::Serialize;
+use serde_json::Value;
+use tokio::fs;
 
 /// ImagesApi struct to interact with the image generation, editing, and variation endpoints of the API.
-pub struct ImagesApi<'a> {
-    client: &'a RequestClient,  // Reference to the HTTP client
-    base_url: &'a str,          // Base URL for the API
+pub struct ImagesApi<'a>(pub(crate) &'a OpenAI);
+
+#[derive(Serialize)]
+struct GenerateImageRequest<'a> {
+    /// The text prompt to generate the image from
+    prompt: &'a str,
+
+    /// The model to use for generating the image
+    model: &'a str,
+
+    /// Optional size of the image
+    #[serde(skip_serializing_if = "Option::is_none")]
+    size: Option<&'a str>,
+
+    /// Optional response format
+    #[serde(skip_serializing_if = "Option::is_none")]
+    response_format: Option<&'a str>,
+
+    /// Optional number of images to generate
+    #[serde(skip_serializing_if = "Option::is_none")]
+    n: Option<u64>,
+
+    /// Optional user ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    user: Option<&'a str>,
 }
 
 impl<'a> ImagesApi<'a> {
-    /// Create a new instance of ImagesApi.
-    ///
-    /// # Arguments
-    ///
-    /// * `client` - A reference to the RequestClient.
-    /// * `base_url` - The base URL for the API.
-    pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
-        ImagesApi { client, base_url }
-    }
-
     /// Generate an image based on the provided prompt and parameters.
     ///
     /// # Arguments
@@ -38,55 +50,28 @@ impl<'a> ImagesApi<'a> {
     /// or an OpenAIError on failure.
     pub async fn generate(
         &self,
-        prompt: &str,                 // The text prompt to generate the image from
-        model: &str,                  // The model to use for generating the image
-        size: Option<&str>,           // Optional size of the image
-        response_format: Option<&str>,// Optional response format
-        n: Option<u64>,               // Optional number of images to generate
-        user: Option<&str>            // Optional user ID
-    ) -> Result<Value, OpenAIError> {
+        prompt: &str,                  // The text prompt to generate the image from
+        model: &str,                   // The model to use for generating the image
+        size: Option<&str>,            // Optional size of the image
+        response_format: Option<&str>, // Optional response format
+        n: Option<u64>,                // Optional number of images to generate
+        user: Option<&str>,            // Optional user ID
+    ) -> OpenAIResult<Value> {
         // Construct the full URL for the image generation endpoint.
-        let url = format!("{}/images/generations", self.base_url);
-        
+        let url = format!("{}/images/generations", self.0.base_url);
+
         // Initialize a JSON object to build the request body.
-        let mut body = json!({
-            "prompt": prompt,
-            "model": model
-        });
-
-        // Insert optional fields if they are provided.
-        if let Some(size) = size {
-            if let Value::Object(map) = &mut body {
-                map.insert("size".to_string(), json!(size));
-            }
-        }
-
-        if let Some(response_format) = response_format {
-            if let Value::Object(map) = &mut body {
-                map.insert("response_format".to_string(), json!(response_format));
-            }
-        }
-
-        if let Some(n) = n {
-            if let Value::Object(map) = &mut body {
-                map.insert("n".to_string(), json!(n));
-            }
-        }
-
-        if let Some(user) = user {
-            if let Value::Object(map) = &mut body {
-                map.insert("user".to_string(), json!(user));
-            }
-        }
+        let body = GenerateImageRequest {
+            prompt,
+            model,
+            size,
+            response_format,
+            n,
+            user,
+        };
 
         // Send a POST request to the image generation endpoint with the request body.
-        let response = self.client.post(&url, &body).await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-        
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_json(&url, &body).await
     }
 
     /// Edit an existing image using the provided parameters and mask.
@@ -108,30 +93,26 @@ impl<'a> ImagesApi<'a> {
     /// or an OpenAIError on failure.
     pub async fn edit(
         &self,
-        model: &str,                  // The model to use for editing the image
-        image_path: &str,             // Local file path to the image
-        mask_path: &str,              // Local file path to the mask
-        prompt: &str,                 // Text prompt to guide the editing
-        size: Option<&str>,           // Optional size of the edited image
-        response_format: Option<&str>,// Optional response format
-        n: Option<u64>,               // Optional number of edited images to generate
-        user: Option<&str>            // Optional user ID
-    ) -> Result<Value, OpenAIError> {
+        model: &str,                   // The model to use for editing the image
+        image_path: &str,              // Local file path to the image
+        mask_path: &str,               // Local file path to the mask
+        prompt: &str,                  // Text prompt to guide the editing
+        size: Option<&str>,            // Optional size of the edited image
+        response_format: Option<&str>, // Optional response format
+        n: Option<u64>,                // Optional number of edited images to generate
+        user: Option<&str>,            // Optional user ID
+    ) -> OpenAIResult<Value> {
         // Construct the full URL for the image editing endpoint.
-        let url = format!("{}/images/edits", self.base_url);
+        let url = format!("{}/images/edits", self.0.base_url);
 
         // Open and read the image file asynchronously.
-        let mut image = tokio::fs::File::open(image_path).await?;
-        let mut image_buffer = Vec::new();
-        image.read_to_end(&mut image_buffer).await?;
+        let image_buffer = fs::read(image_path).await?;
         let image_part = multipart::Part::bytes(image_buffer)
             .file_name(image_path.to_string())
             .mime_str("image/png")?;
 
         // Open and read the mask file asynchronously.
-        let mut mask = tokio::fs::File::open(mask_path).await?;
-        let mut mask_buffer = Vec::new();
-        mask.read_to_end(&mut mask_buffer).await?;
+        let mask_buffer = fs::read(mask_path).await?;
         let mask_part = multipart::Part::bytes(mask_buffer)
             .file_name(mask_path.to_string())
             .mime_str("image/png")?;
@@ -143,35 +124,10 @@ impl<'a> ImagesApi<'a> {
             .part("mask", mask_part)
             .text("prompt", prompt.to_string());
 
-        // Insert optional fields if they are provided.
-        if let Some(size) = size {
-            form = form.text("size", size.to_string());
-        }
-
-        if let Some(response_format) = response_format {
-            form = form.text("response_format", response_format.to_string());
-        }
-
-        if let Some(n) = n {
-            form = form.text("n", n.to_string());
-        }
-
-        if let Some(user) = user {
-            form = form.text("user", user.to_string());
-        }
+        extend_form_text_fields!(form, size, response_format, n, user);
 
         // Send a POST request to the image editing endpoint with the multipart form.
-        let response = self.client.client.post(&url)
-            .header("Authorization", format!("Bearer {}", self.client.api_key))
-            .multipart(form)
-            .send()
-            .await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-        
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_form(&url, form).await
     }
 
     /// Create variations of an existing image using the provided parameters.
@@ -191,20 +147,18 @@ impl<'a> ImagesApi<'a> {
     /// or an OpenAIError on failure.
     pub async fn variation(
         &self,
-        model: &str,                  // The model to use for generating variations
-        image_path: &str,             // Local file path to the image
-        size: Option<&str>,           // Optional size of the variation images
-        response_format: Option<&str>,// Optional response format
-        n: Option<u64>,               // Optional number of variation images to generate
-        user: Option<&str>            // Optional user ID
-    ) -> Result<Value, OpenAIError> {
+        model: &str,                   // The model to use for generating variations
+        image_path: &str,              // Local file path to the image
+        size: Option<&str>,            // Optional size of the variation images
+        response_format: Option<&str>, // Optional response format
+        n: Option<u64>,                // Optional number of variation images to generate
+        user: Option<&str>,            // Optional user ID
+    ) -> OpenAIResult<Value> {
         // Construct the full URL for the image variations endpoint.
-        let url = format!("{}/images/variations", self.base_url);
+        let url = format!("{}/images/variations", self.0.base_url);
 
         // Open and read the image file asynchronously.
-        let mut image = tokio::fs::File::open(image_path).await?;
-        let mut buffer = Vec::new();
-        image.read_to_end(&mut buffer).await?;
+        let buffer = fs::read(image_path).await?;
         let image_part = multipart::Part::bytes(buffer)
             .file_name(image_path.to_string())
             .mime_str("image/png")?;
@@ -214,34 +168,9 @@ impl<'a> ImagesApi<'a> {
             .text("model", model.to_string())
             .part("image", image_part);
 
-        // Insert optional fields if they are provided.
-        if let Some(size) = size {
-            form = form.text("size", size.to_string());
-        }
-
-        if let Some(response_format) = response_format {
-            form = form.text("response_format", response_format.to_string());
-        }
-
-        if let Some(n) = n {
-            form = form.text("n", n.to_string());
-        }
-
-        if let Some(user) = user {
-            form = form.text("user", user.to_string());
-        }
+        extend_form_text_fields!(form, size, response_format, n, user);
 
         // Send a POST request to the image variations endpoint with the multipart form.
-        let response = self.client.client.post(&url)
-            .header("Authorization", format!("Bearer {}", self.client.api_key))
-            .multipart(form)
-            .send()
-            .await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-        
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_form(&url, form).await
     }
 }

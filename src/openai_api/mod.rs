@@ -1,10 +1,10 @@
+pub mod assistants;
+pub mod audio;
 pub mod client;
 pub mod completion;
-pub mod audio;
-pub mod images;
-pub mod fine_tuning;
-pub mod moderations;
 pub mod embeddings;
-pub mod assistants;
+pub mod fine_tuning;
+pub mod images;
+pub mod moderations;
 pub mod threads;
 pub mod vectors;

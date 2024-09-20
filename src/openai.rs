@@ -1,29 +1,91 @@
-use crate::openai_api::embeddings::EmbeddingsApi;
-use crate::request_client::RequestClient;
-use crate::openai_api::{
-    client::ClientApi,
-    completion::CompletionsApi,
-    audio::AudioApi,
-    images::ImagesApi,
-    fine_tuning::FineTuningApi,
-    moderations::ModerationApi,
-    assistants::AssistantsApi,
-    threads::ThreadsApi,
-    vectors::VectorsApi,
+use crate::{
+    error_handling::OpenAIResult,
+    openai_api::{
+        assistants::AssistantsApi, audio::AudioApi, client::ClientApi, completion::CompletionsApi,
+        embeddings::EmbeddingsApi, fine_tuning::FineTuningApi, images::ImagesApi,
+        moderations::ModerationApi, threads::ThreadsApi, vectors::VectorsApi,
+    },
 };
+use reqwest::{multipart::Form, Client};
+use serde::{de::DeserializeOwned, Serialize};
 
 pub struct OpenAI {
-    client: RequestClient,
-    base_url: String,
+    pub(crate) client: Client,
+    authorization: String,
+    pub(crate) base_url: String,
 }
 
 impl OpenAI {
     pub fn new(api_key: &str, base_url: &str) -> Self {
         let default_base_url = "https://api.openai.com/v1";
+
         OpenAI {
-            client: RequestClient::new(api_key),
-            base_url: if base_url.is_empty() { default_base_url.to_string() } else { base_url.to_string() },
+            client: Client::new(),
+            authorization: format!("Bearer {api_key}"),
+            base_url: {
+                if base_url.is_empty() {
+                    default_base_url
+                } else {
+                    base_url
+                }
+            }
+            .to_string(),
         }
+    }
+
+    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
+        Ok(self
+            .client
+            .get(url)
+            .header("Authorization", &self.authorization)
+            .send()
+            .await?
+            .json()
+            .await?)
+    }
+
+    pub(crate) async fn post_json<B: Serialize + ?Sized, T: DeserializeOwned>(
+        &self,
+        url: &str,
+        body: &B,
+    ) -> OpenAIResult<T> {
+        Ok(self
+            .client
+            .post(url)
+            .header("Authorization", &self.authorization)
+            .header("Content-Type", "application/json")
+            .json(body)
+            .send()
+            .await?
+            .json()
+            .await?)
+    }
+
+    pub(crate) async fn post_form<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        form: Form,
+    ) -> OpenAIResult<T> {
+        Ok(self
+            .client
+            .post(url)
+            .header("Authorization", &self.authorization)
+            .multipart(form)
+            .send()
+            .await?
+            .json()
+            .await?)
+    }
+
+    pub(crate) async fn delete<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
+        Ok(self
+            .client
+            .delete(url)
+            .header("Authorization", &self.authorization)
+            .send()
+            .await?
+            .json()
+            .await?)
     }
 
     pub fn get_base_url(&self) -> &str {
@@ -34,43 +96,43 @@ impl OpenAI {
         self.base_url = base_url.to_string();
     }
 
-    pub fn client(&self) -> ClientApi {
-        ClientApi::new(&self.client, &self.base_url)
+    pub const fn client(&self) -> ClientApi {
+        ClientApi(self)
     }
 
-    pub fn completions(&self) -> CompletionsApi {
-        CompletionsApi::new(&self.client, &self.base_url)
+    pub const fn completions(&self) -> CompletionsApi {
+        CompletionsApi(self)
     }
 
-    pub fn audio(&self) -> AudioApi {
-        AudioApi::new(&self.client, &self.base_url)
+    pub const fn audio(&self) -> AudioApi {
+        AudioApi(self)
     }
 
-    pub fn images(&self) -> ImagesApi {
-        ImagesApi::new(&self.client, &self.base_url)
+    pub const fn images(&self) -> ImagesApi {
+        ImagesApi(self)
     }
 
-    pub fn fine_tuning(&self) -> FineTuningApi {
-        FineTuningApi::new(&self.client, &self.base_url)
+    pub const fn fine_tuning(&self) -> FineTuningApi {
+        FineTuningApi(self)
     }
 
-    pub fn moderation(&self) -> ModerationApi {
-        ModerationApi::new(&self.client, &self.base_url)
+    pub const fn moderation(&self) -> ModerationApi {
+        ModerationApi(self)
     }
 
-    pub fn embeddings(&self) -> EmbeddingsApi {
-        EmbeddingsApi::new(&self.client, &self.base_url)
+    pub const fn embeddings(&self) -> EmbeddingsApi {
+        EmbeddingsApi(self)
     }
 
-    pub fn assistants(&self) -> AssistantsApi {
-        AssistantsApi::new(&self.client, &self.base_url)
+    pub const fn assistants(&self) -> AssistantsApi {
+        AssistantsApi(self)
     }
 
-    pub fn threads(&self) -> ThreadsApi {
-        ThreadsApi::new(&self.client, &self.base_url)
+    pub const fn threads(&self) -> ThreadsApi {
+        ThreadsApi(self)
     }
 
-    pub fn vectors(&self) -> VectorsApi {
-        VectorsApi::new(&self.client, &self.base_url)
+    pub const fn vectors(&self) -> VectorsApi {
+        VectorsApi(self)
     }
 }

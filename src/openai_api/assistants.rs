@@ -1,25 +1,51 @@
-use crate::request_client::RequestClient;
-use crate::error_handling::OpenAIError;
-use serde_json::{json, Value};
+use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI};
+use serde::Serialize;
+use serde_json::Value;
 
 /// AssistantsApi struct to interact with the assistants endpoints of the API.
-pub struct AssistantsApi<'a> {
-    client: &'a RequestClient,  // Reference to the HTTP client
-    base_url: &'a str,          // Base URL for the API
-}
+pub struct AssistantsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for creating or modifying an assistant.
+#[derive(Serialize)]
 pub struct AssistantRequest {
-    model: String,                // Model name to be used for the assistant
-    name: Option<String>,         // Name for the assistant
-    description: Option<String>,  // Description of the assistant
-    instructions: Option<String>, // Instructions for the assistant
-    tools: Option<Vec<Value>>,    // Tools to be used by the assistant
-    tool_resources: Option<Value>,// Resources for the tools
-    metadata: Option<Value>,      // Metadata for the assistant
-    temperature: Option<f64>,     // Sampling temperature
-    top_p: Option<f64>,           // Nucleus sampling parameter
-    response_format: Option<Value>,// Format of responses from the assistant
+    /// Model name to be used for the assistant
+    model: String,
+
+    /// Name for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// Description of the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+
+    /// Instructions for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    instructions: Option<String>,
+
+    /// Tools to be used by the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tools: Option<Vec<Value>>,
+
+    /// Resources for the tools
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tool_resources: Option<Value>,
+
+    /// Metadata for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    metadata: Option<Value>,
+
+    /// Sampling temperature
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
+
+    /// Nucleus sampling parameter
+    #[serde(skip_serializing_if = "Option::is_none")]
+    top_p: Option<f64>,
+
+    /// Format of responses from the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    response_format: Option<Value>,
 }
 
 impl AssistantRequest {
@@ -103,20 +129,6 @@ impl AssistantRequest {
 }
 
 impl<'a> AssistantsApi<'a> {
-    /// Create a new instance of AssistantsApi.
-    ///
-    /// # Arguments
-    ///
-    /// * `client` - Reference to the HTTP client.
-    /// * `base_url` - Base URL for the API.
-    ///
-    /// # Returns
-    ///
-    /// A new instance of AssistantsApi.
-    pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
-        AssistantsApi { client, base_url }
-    }
-
     /// Create a new assistant using the provided request parameters.
     ///
     /// # Arguments
@@ -127,51 +139,12 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn create(&self, request: AssistantRequest) -> Result<Value, OpenAIError> {
+    pub async fn create(&self, request: AssistantRequest) -> OpenAIResult<Value> {
         // Construct the full URL for the assistants endpoint.
-        let url = format!("{}/assistants", self.base_url);
-
-        // Initialize a JSON map to build the request body.
-        let mut body = serde_json::Map::new();
-        body.insert("model".to_string(), json!(request.model));
-
-        // Insert optional fields if they are provided.
-        if let Some(name) = request.name {
-            body.insert("name".to_string(), json!(name));
-        }
-        if let Some(description) = request.description {
-            body.insert("description".to_string(), json!(description));
-        }
-        if let Some(instructions) = request.instructions {
-            body.insert("instructions".to_string(), json!(instructions));
-        }
-        if let Some(tools) = request.tools {
-            body.insert("tools".to_string(), json!(tools));
-        }
-        if let Some(tool_resources) = request.tool_resources {
-            body.insert("tool_resources".to_string(), json!(tool_resources));
-        }
-        if let Some(metadata) = request.metadata {
-            body.insert("metadata".to_string(), json!(metadata));
-        }
-        if let Some(temperature) = request.temperature {
-            body.insert("temperature".to_string(), json!(temperature));
-        }
-        if let Some(top_p) = request.top_p {
-            body.insert("top_p".to_string(), json!(top_p));
-        }
-        if let Some(response_format) = request.response_format {
-            body.insert("response_format".to_string(), json!(response_format));
-        }
+        let url = format!("{}/assistants", self.0.base_url);
 
         // Send a POST request to the assistants endpoint with the request body.
-        let response = self.client.post(&url, &Value::Object(body)).await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_json(&url, &request).await
     }
 
     /// List assistants with optional query parameters.
@@ -187,30 +160,19 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn list(&self, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> Result<Value, OpenAIError> {
-        let mut url = format!("{}/assistants", self.base_url);
-        let mut params = vec![];
+    pub async fn list(
+        &self,
+        limit: Option<u32>,
+        order: Option<&str>,
+        after: Option<&str>,
+        before: Option<&str>,
+    ) -> OpenAIResult<Value> {
+        let mut url = format!("{}/assistants?", self.0.base_url);
 
-        if let Some(limit) = limit {
-            params.push(format!("limit={}", limit));
-        }
-        if let Some(order) = order {
-            params.push(format!("order={}", order));
-        }
-        if let Some(after) = after {
-            params.push(format!("after={}", after));
-        }
-        if let Some(before) = before {
-            params.push(format!("before={}", before));
-        }
+        extend_url_params!(url, limit, order, after, before);
+        url.pop();
 
-        if !params.is_empty() {
-            url = format!("{}?{}", url, params.join("&"));
-        }
-
-        let response = self.client.get(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+        self.0.get(&url).await
     }
 
     /// Retrieve details of a specific assistant.
@@ -223,11 +185,10 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn retrieve(&self, assistant_id: &str) -> Result<Value, OpenAIError> {
-        let url = format!("{}/assistants/{}", self.base_url, assistant_id);
-        let response = self.client.get(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+    pub async fn retrieve(&self, assistant_id: &str) -> OpenAIResult<Value> {
+        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
+
+        self.0.get(&url).await
     }
 
     /// Modify an existing assistant using the provided request parameters.
@@ -241,42 +202,14 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn modify(&self, assistant_id: &str, request: AssistantRequest) -> Result<Value, OpenAIError> {
-        let url = format!("{}/assistants/{}", self.base_url, assistant_id);
-        let mut body = serde_json::Map::new();
+    pub async fn modify(
+        &self,
+        assistant_id: &str,
+        request: AssistantRequest,
+    ) -> OpenAIResult<Value> {
+        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
 
-        // Insert optional fields if they are provided.
-        if let Some(name) = request.name {
-            body.insert("name".to_string(), json!(name));
-        }
-        if let Some(description) = request.description {
-            body.insert("description".to_string(), json!(description));
-        }
-        if let Some(instructions) = request.instructions {
-            body.insert("instructions".to_string(), json!(instructions));
-        }
-        if let Some(tools) = request.tools {
-            body.insert("tools".to_string(), json!(tools));
-        }
-        if let Some(tool_resources) = request.tool_resources {
-            body.insert("tool_resources".to_string(), json!(tool_resources));
-        }
-        if let Some(metadata) = request.metadata {
-            body.insert("metadata".to_string(), json!(metadata));
-        }
-        if let Some(temperature) = request.temperature {
-            body.insert("temperature".to_string(), json!(temperature));
-        }
-        if let Some(top_p) = request.top_p {
-            body.insert("top_p".to_string(), json!(top_p));
-        }
-        if let Some(response_format) = request.response_format {
-            body.insert("response_format".to_string(), json!(response_format));
-        }
-
-        let response = self.client.post(&url, &Value::Object(body)).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+        self.0.post_json(&url, &request).await
     }
 
     /// Delete a specific assistant.
@@ -289,10 +222,9 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn delete(&self, assistant_id: &str) -> Result<Value, OpenAIError> {
-        let url = format!("{}/assistants/{}", self.base_url, assistant_id);
-        let response = self.client.delete(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+    pub async fn delete(&self, assistant_id: &str) -> OpenAIResult<Value> {
+        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
+
+        self.0.delete(&url).await
     }
 }

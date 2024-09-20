@@ -1,34 +1,51 @@
-use crate::request_client::RequestClient;
-use crate::error_handling::OpenAIError;
-use serde_json::{json, Value};
+use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI};
+use serde::Serialize;
+use serde_json::Value;
 
 /// VectorsApi struct to interact with vector stores API endpoints.
-pub struct VectorsApi<'a> {
-    client: &'a RequestClient,  // Reference to the HTTP client
-    base_url: &'a str,          // Base URL for the API
+pub struct VectorsApi<'a>(pub(crate) &'a OpenAI);
+
+/// Struct representing a request for vector store creation.
+#[derive(Default, Serialize)]
+pub struct VectorStoreCreationRequest {
+    /// List of file IDs to include in the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    file_ids: Option<Vec<String>>,
+
+    /// Name for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// Expiration date for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expires_after: Option<Value>,
+
+    /// Strategy for chunking the data
+    #[serde(skip_serializing_if = "Option::is_none")]
+    chunking_strategy: Option<Value>,
+
+    /// Metadata for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    metadata: Option<Value>,
 }
 
-/// Struct representing a request for vector store creation and modification.
-pub struct VectorStoreRequest {
-    file_ids: Option<Vec<String>>,        // List of file IDs to include in the vector store
-    name: Option<String>,                 // Name for the vector store
-    expires_after: Option<Value>,         // Expiration date for the vector store
-    chunking_strategy: Option<Value>,     // Strategy for chunking the data
-    metadata: Option<Value>,              // Metadata for the vector store
+/// Struct representing a request for vector store modification.
+#[derive(Default, Serialize)]
+pub struct VectorStoreModificationRequest {
+    /// Name for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// Expiration date for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expires_after: Option<Value>,
+
+    /// Metadata for the vector store
+    #[serde(skip_serializing_if = "Option::is_none")]
+    metadata: Option<Value>,
 }
 
-impl VectorStoreRequest {
-    /// Create a new instance of VectorStoreRequest.
-    pub fn new() -> Self {
-        VectorStoreRequest {
-            file_ids: None,
-            name: None,
-            expires_after: None,
-            chunking_strategy: None,
-            metadata: None,
-        }
-    }
-
+impl VectorStoreCreationRequest {
     /// Set file IDs for the request.
     pub fn file_ids(mut self, file_ids: Vec<String>) -> Self {
         self.file_ids = Some(file_ids);
@@ -61,53 +78,25 @@ impl VectorStoreRequest {
 }
 
 impl<'a> VectorsApi<'a> {
-    /// Create a new instance of VectorsApi.
-    pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
-        VectorsApi { client, base_url }
-    }
-
     /// Create a new vector store using the provided request parameters.
     ///
     /// # Arguments
     ///
-    /// * `request` - A VectorStoreRequest containing the parameters for the vector store.
+    /// * `request` - A VectorStoreCreationRequest containing the parameters for the vector store.
     ///
     /// # Returns
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn create_vector_store(&self, request: VectorStoreRequest) -> Result<Value, OpenAIError> {
+    pub async fn create_vector_store(
+        &self,
+        request: VectorStoreCreationRequest,
+    ) -> OpenAIResult<Value> {
         // Construct the full URL for the vector stores endpoint.
-        let url = format!("{}/vector_stores", self.base_url);
-
-        // Initialize a JSON map to build the request body.
-        let mut body = serde_json::Map::new();
-
-        // Insert optional fields if they are provided.
-        if let Some(file_ids) = request.file_ids {
-            body.insert("file_ids".to_string(), json!(file_ids));
-        }
-        if let Some(name) = request.name {
-            body.insert("name".to_string(), json!(name));
-        }
-        if let Some(expires_after) = request.expires_after {
-            body.insert("expires_after".to_string(), json!(expires_after));
-        }
-        if let Some(chunking_strategy) = request.chunking_strategy {
-            body.insert("chunking_strategy".to_string(), json!(chunking_strategy));
-        }
-        if let Some(metadata) = request.metadata {
-            body.insert("metadata".to_string(), json!(metadata));
-        }
+        let url = format!("{}/vector_stores", self.0.base_url);
 
         // Send a POST request to the vector stores endpoint with the request body.
-        let response = self.client.post(&url, &Value::Object(body)).await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_json(&url, &request).await
     }
 
     /// List vector stores with optional query parameters.
@@ -123,24 +112,19 @@ impl<'a> VectorsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn list_vector_stores(&self, limit: Option<u64>, order: Option<String>, after: Option<String>, before: Option<String>) -> Result<Value, OpenAIError> {
-        let mut url = format!("{}/vector_stores", self.base_url);
-        url.push_str("?");
-        if let Some(limit) = limit {
-            url.push_str(&format!("limit={}&", limit));
-        }
-        if let Some(order) = order {
-            url.push_str(&format!("order={}&", order));
-        }
-        if let Some(after) = after {
-            url.push_str(&format!("after={}&", after));
-        }
-        if let Some(before) = before {
-            url.push_str(&format!("before={}&", before));
-        }
-        let response = self.client.get(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+    pub async fn list_vector_stores(
+        &self,
+        limit: Option<u64>,
+        order: Option<String>,
+        after: Option<String>,
+        before: Option<String>,
+    ) -> OpenAIResult<Value> {
+        let mut url = format!("{}/vector_stores?", self.0.base_url);
+
+        extend_url_params!(url, limit, order, after, before);
+        url.pop();
+
+        self.0.get(&url).await
     }
 
     /// Retrieve details of a specific vector store.
@@ -153,11 +137,10 @@ impl<'a> VectorsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> Result<Value, OpenAIError> {
-        let url = format!("{}/vector_stores/{}", self.base_url, vector_store_id);
-        let response = self.client.get(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+    pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
+        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
+
+        self.0.get(&url).await
     }
 
     /// Modify an existing vector store using the provided request parameters.
@@ -165,29 +148,20 @@ impl<'a> VectorsApi<'a> {
     /// # Arguments
     ///
     /// * `vector_store_id` - The ID of the vector store to modify.
-    /// * `request` - A VectorStoreRequest containing the parameters for the vector store modification.
+    /// * `request` - A VectorStoreModificationRequest containing the parameters for the vector store modification.
     ///
     /// # Returns
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn modify_vector_store(&self, vector_store_id: &str, request: VectorStoreRequest) -> Result<Value, OpenAIError> {
-        let url = format!("{}/vector_stores/{}", self.base_url, vector_store_id);
-        let mut body = serde_json::Map::new();
+    pub async fn modify_vector_store(
+        &self,
+        vector_store_id: &str,
+        request: VectorStoreModificationRequest,
+    ) -> OpenAIResult<Value> {
+        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
 
-        if let Some(name) = request.name {
-            body.insert("name".to_string(), json!(name));
-        }
-        if let Some(expires_after) = request.expires_after {
-            body.insert("expires_after".to_string(), json!(expires_after));
-        }
-        if let Some(metadata) = request.metadata {
-            body.insert("metadata".to_string(), json!(metadata));
-        }
-
-        let response = self.client.post(&url, &Value::Object(body)).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+        self.0.post_json(&url, &request).await
     }
 
     /// Delete a specific vector store.
@@ -200,10 +174,9 @@ impl<'a> VectorsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn delete_vector_store(&self, vector_store_id: &str) -> Result<Value, OpenAIError> {
-        let url = format!("{}/vector_stores/{}", self.base_url, vector_store_id);
-        let response = self.client.delete(&url).await?;
-        let json: Value = response.json().await?;
-        Ok(json)
+    pub async fn delete_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
+        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
+
+        self.0.delete(&url).await
     }
 }

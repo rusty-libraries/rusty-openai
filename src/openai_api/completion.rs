@@ -1,27 +1,58 @@
-use crate::request_client::RequestClient;
-use crate::error_handling::OpenAIError;
-use serde_json::{json, Value};
+use crate::{error_handling::OpenAIResult, openai::OpenAI};
+use serde::Serialize;
+use serde_json::Value;
 
 /// CompletionsApi struct to interact with the chat completions endpoint of the API.
-pub struct CompletionsApi<'a> {
-    client: &'a RequestClient,  // Reference to the HTTP client
-    base_url: &'a str,          // Base URL for the API
-}
+pub struct CompletionsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for chat completions.
+#[derive(Serialize)]
 pub struct ChatCompletionRequest {
-    model: String,                // Model name to be used for the chat completion
-    messages: Vec<Value>,         // History of messages in the conversation
-    max_tokens: Option<u64>,      // Maximum number of tokens to generate
-    temperature: Option<f64>,     // Sampling temperature
-    top_p: Option<f64>,           // Nucleus sampling parameter
-    n: Option<u64>,               // Number of completions to generate for each prompt
-    stream: Option<bool>,         // Whether to stream back partial progress
-    stop: Option<Vec<String>>,    // Sequence to stop generation
-    presence_penalty: Option<f64>,// Presence penalty to apply
-    frequency_penalty: Option<f64>,// Frequency penalty to apply
-    logit_bias: Option<Value>,    // Bias for logits
-    user: Option<String>,         // User ID
+    /// Model name to be used for the chat completion
+    model: String,
+
+    /// History of messages in the conversation
+    messages: Vec<Value>,
+
+    /// Maximum number of tokens to generate
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_tokens: Option<u64>,
+
+    /// Sampling temperature
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
+
+    /// Nucleus sampling parameter
+    #[serde(skip_serializing_if = "Option::is_none")]
+    top_p: Option<f64>,
+
+    /// Number of completions to generate for each prompt
+    #[serde(skip_serializing_if = "Option::is_none")]
+    n: Option<u64>,
+
+    /// Whether to stream back partial progress
+    #[serde(skip_serializing_if = "Option::is_none")]
+    stream: Option<bool>,
+
+    /// Sequence to stop generation
+    #[serde(skip_serializing_if = "Option::is_none")]
+    stop: Option<Vec<String>>,
+
+    /// Presence penalty to apply
+    #[serde(skip_serializing_if = "Option::is_none")]
+    presence_penalty: Option<f64>,
+
+    /// Frequency penalty to apply
+    #[serde(skip_serializing_if = "Option::is_none")]
+    frequency_penalty: Option<f64>,
+
+    /// Bias for logits
+    #[serde(skip_serializing_if = "Option::is_none")]
+    logit_bias: Option<Value>,
+
+    /// User ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    user: Option<String>,
 }
 
 impl ChatCompletionRequest {
@@ -44,7 +75,7 @@ impl ChatCompletionRequest {
     }
 
     // Fluent setter methods to set each option on the request.
-    
+
     pub fn max_tokens(mut self, max_tokens: u64) -> Self {
         self.max_tokens = Some(max_tokens);
         self
@@ -97,11 +128,6 @@ impl ChatCompletionRequest {
 }
 
 impl<'a> CompletionsApi<'a> {
-    /// Create a new instance of CompletionsApi.
-    pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
-        CompletionsApi { client, base_url }
-    }
-
     /// Create a chat completion using the provided request parameters.
     ///
     /// # Arguments
@@ -112,56 +138,11 @@ impl<'a> CompletionsApi<'a> {
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn create(&self, request: ChatCompletionRequest) -> Result<Value, OpenAIError> {
+    pub async fn create(&self, request: ChatCompletionRequest) -> OpenAIResult<Value> {
         // Construct the full URL for the chat completions endpoint.
-        let url = format!("{}/chat/completions", self.base_url);
-        
-        // Initialize a JSON map to build the request body.
-        let mut body = serde_json::Map::new();
-    
-        // Insert required fields to the JSON map.
-        body.insert("model".to_string(), json!(request.model));
-        body.insert("messages".to_string(), json!(request.messages));
-        
-        // Insert optional fields if they are provided.
-        if let Some(max_tokens) = request.max_tokens {
-            body.insert("max_tokens".to_string(), json!(max_tokens));
-        }
-        if let Some(temperature) = request.temperature {
-            body.insert("temperature".to_string(), json!(temperature));
-        }
-        if let Some(top_p) = request.top_p {
-            body.insert("top_p".to_string(), json!(top_p));
-        }
-        if let Some(n) = request.n {
-            body.insert("n".to_string(), json!(n));
-        }
-        if let Some(stream) = request.stream {
-            body.insert("stream".to_string(), json!(stream));
-        }
-        if let Some(stop) = request.stop {
-            body.insert("stop".to_string(), json!(stop));
-        }
-        if let Some(presence_penalty) = request.presence_penalty {
-            body.insert("presence_penalty".to_string(), json!(presence_penalty));
-        }
-        if let Some(frequency_penalty) = request.frequency_penalty {
-            body.insert("frequency_penalty".to_string(), json!(frequency_penalty));
-        }
-        if let Some(logit_bias) = request.logit_bias {
-            body.insert("logit_bias".to_string(), json!(logit_bias));
-        }
-        if let Some(user) = request.user {
-            body.insert("user".to_string(), json!(user));
-        }
+        let url = format!("{}/chat/completions", self.0.base_url);
 
         // Send a POST request to the chat completions endpoint with the request body.
-        let response = self.client.post(&url, &Value::Object(body)).await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-        
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_json(&url, &request).await
     }
 }
