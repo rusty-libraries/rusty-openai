@@ -12,10 +12,7 @@ impl<'a> ClientApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn get_models(&self) -> OpenAIResult<Value> {
-        // Construct the full URL for the models endpoint.
-        let url = format!("{}/models", self.0.base_url);
-
         // Send a GET request to the models endpoint.
-        self.0.get(&url).await
+        self.0.get("/models").await
     }
 }

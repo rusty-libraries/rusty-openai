@@ -28,13 +28,10 @@ impl<'a> ModerationApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn moderate(&self, input: &str, model: Option<&str>) -> OpenAIResult<Value> {
-        // Construct the full URL for the moderation endpoint.
-        let url = format!("{}/moderations", self.0.base_url);
-
         // Initialize a JSON object to build the request body.
         let body = ModerationRequest { input, model };
 
         // Send a POST request to the moderation endpoint with the request body.
-        self.0.post_json(&url, &body).await
+        self.0.post_json("/moderations", &body).await
     }
 }

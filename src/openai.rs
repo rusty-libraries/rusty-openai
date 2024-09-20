@@ -36,7 +36,7 @@ impl OpenAI {
     pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
         Ok(self
             .client
-            .get(url)
+            .get(format!("{}{url}", self.base_url))
             .header("Authorization", &self.authorization)
             .send()
             .await?
@@ -51,7 +51,7 @@ impl OpenAI {
     ) -> OpenAIResult<T> {
         Ok(self
             .client
-            .post(url)
+            .post(format!("{}{url}", self.base_url))
             .header("Authorization", &self.authorization)
             .header("Content-Type", "application/json")
             .json(body)
@@ -68,7 +68,7 @@ impl OpenAI {
     ) -> OpenAIResult<T> {
         Ok(self
             .client
-            .post(url)
+            .post(format!("{}{url}", self.base_url))
             .header("Authorization", &self.authorization)
             .multipart(form)
             .send()
@@ -80,7 +80,7 @@ impl OpenAI {
     pub(crate) async fn delete<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
         Ok(self
             .client
-            .delete(url)
+            .delete(format!("{}{url}", self.base_url))
             .header("Authorization", &self.authorization)
             .send()
             .await?

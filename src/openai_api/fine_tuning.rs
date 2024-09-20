@@ -85,9 +85,6 @@ impl<'a> FineTuningApi<'a> {
         classification_positive_class: Option<&str>, // Optional positive class for classification
         classification_betas: Option<Vec<f64>>, // Optional betas for classification metrics
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the fine-tuning jobs endpoint.
-        let url = format!("{}/fine-tuning/jobs", self.0.base_url);
-
         // Initialize a JSON map to build the request body.
         let body = FineTuningRequest {
             model,
@@ -104,7 +101,7 @@ impl<'a> FineTuningApi<'a> {
         };
 
         // Send a POST request to the fine-tuning jobs endpoint with the request body.
-        self.0.post_json(&url, &body).await
+        self.0.post_json("/fine-tuning/jobs", &body).await
     }
 
     /// List all fine-tuning jobs.
@@ -115,11 +112,8 @@ impl<'a> FineTuningApi<'a> {
     /// or an OpenAIError on failure.
 
     pub async fn list_fine_tuning_jobs(&self) -> OpenAIResult<Value> {
-        // Construct the full URL for listing fine-tuning jobs.
-        let url = format!("{}/fine-tuning/jobs", self.0.base_url);
-
         // Send a GET request to the fine-tuning jobs endpoint.
-        self.0.get(&url).await
+        self.0.get("/fine-tuning/jobs").await
     }
 
     /// Retrieve information about a specific fine-tuning job.
@@ -134,7 +128,7 @@ impl<'a> FineTuningApi<'a> {
     /// or an OpenAIError on failure.
     pub async fn retrieve_fine_tuning_job(&self, job_id: &str) -> OpenAIResult<Value> {
         // Construct the full URL for retrieving a specific fine-tuning job.
-        let url = format!("{}/fine-tuning/jobs/{job_id}", self.0.base_url);
+        let url = format!("/fine-tuning/jobs/{job_id}");
 
         // Send a GET request to the specific fine-tuning job endpoint.
         self.0.get(&url).await

@@ -17,8 +17,6 @@ impl<'a> AudioApi<'a> {
         temperature: Option<f64>,      // Optional temperature setting for response generation
         language: Option<&str>,        // Optional language hint for the transcription
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/audio/transcriptions", self.0.base_url);
-
         // Open the audio file asynchronously
         let buffer = fs::read(file_path).await?;
 
@@ -34,7 +32,7 @@ impl<'a> AudioApi<'a> {
         extend_form_text_fields!(form, prompt, response_format, temperature, language);
 
         // Make HTTP POST request to the transcription API
-        self.0.post_form(&url, form).await
+        self.0.post_form("/audio/transcriptions", form).await
     }
 
     /// Translate an audio file using the specified model.
@@ -46,8 +44,6 @@ impl<'a> AudioApi<'a> {
         response_format: Option<&str>, // Optional response format (e.g., "text", "json")
         temperature: Option<f64>,      // Optional temperature setting for response generation
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/audio/translations", self.0.base_url);
-
         // Open the audio file asynchronously
         let buffer = fs::read(file_path).await?;
 
@@ -63,6 +59,6 @@ impl<'a> AudioApi<'a> {
         extend_form_text_fields!(form, prompt, response_format, temperature);
 
         // Make HTTP POST request to the translation API
-        self.0.post_form(&url, form).await
+        self.0.post_form("/audio/translations", form).await
     }
 }

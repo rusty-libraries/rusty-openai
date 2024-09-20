@@ -49,9 +49,6 @@ impl<'a> EmbeddingsApi<'a> {
         dimensions: Option<u64>,       // Optional number of dimensions
         user: Option<&str>,            // Optional user ID
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the embeddings endpoint.
-        let url = format!("{}/embeddings", self.0.base_url);
-
         // Initialize a JSON object to build the request body.
         let body = AssistantRequest {
             input,
@@ -62,6 +59,6 @@ impl<'a> EmbeddingsApi<'a> {
         };
 
         // Send a POST request to the embeddings endpoint with the request body.
-        self.0.post_json(&url, &body).await
+        self.0.post_json("/embeddings", &body).await
     }
 }

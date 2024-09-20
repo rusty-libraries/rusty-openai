@@ -140,11 +140,8 @@ impl<'a> AssistantsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn create(&self, request: AssistantRequest) -> OpenAIResult<Value> {
-        // Construct the full URL for the assistants endpoint.
-        let url = format!("{}/assistants", self.0.base_url);
-
         // Send a POST request to the assistants endpoint with the request body.
-        self.0.post_json(&url, &request).await
+        self.0.post_json("/assistants", &request).await
     }
 
     /// List assistants with optional query parameters.
@@ -167,7 +164,7 @@ impl<'a> AssistantsApi<'a> {
         after: Option<&str>,
         before: Option<&str>,
     ) -> OpenAIResult<Value> {
-        let mut url = format!("{}/assistants?", self.0.base_url);
+        let mut url = String::from("/assistants?");
 
         extend_url_params!(url, limit, order, after, before);
         url.pop();
@@ -186,7 +183,7 @@ impl<'a> AssistantsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn retrieve(&self, assistant_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
+        let url = format!("/assistants/{assistant_id}");
 
         self.0.get(&url).await
     }
@@ -207,7 +204,7 @@ impl<'a> AssistantsApi<'a> {
         assistant_id: &str,
         request: AssistantRequest,
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
+        let url = format!("/assistants/{assistant_id}");
 
         self.0.post_json(&url, &request).await
     }
@@ -223,7 +220,7 @@ impl<'a> AssistantsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn delete(&self, assistant_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/assistants/{assistant_id}", self.0.base_url);
+        let url = format!("/assistants/{assistant_id}");
 
         self.0.delete(&url).await
     }

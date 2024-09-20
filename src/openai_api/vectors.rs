@@ -92,11 +92,8 @@ impl<'a> VectorsApi<'a> {
         &self,
         request: VectorStoreCreationRequest,
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the vector stores endpoint.
-        let url = format!("{}/vector_stores", self.0.base_url);
-
         // Send a POST request to the vector stores endpoint with the request body.
-        self.0.post_json(&url, &request).await
+        self.0.post_json("/vector_stores", &request).await
     }
 
     /// List vector stores with optional query parameters.
@@ -119,7 +116,7 @@ impl<'a> VectorsApi<'a> {
         after: Option<String>,
         before: Option<String>,
     ) -> OpenAIResult<Value> {
-        let mut url = format!("{}/vector_stores?", self.0.base_url);
+        let mut url = String::from("/vector_stores?");
 
         extend_url_params!(url, limit, order, after, before);
         url.pop();
@@ -138,7 +135,7 @@ impl<'a> VectorsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
+        let url = format!("/vector_stores/{vector_store_id}");
 
         self.0.get(&url).await
     }
@@ -159,7 +156,7 @@ impl<'a> VectorsApi<'a> {
         vector_store_id: &str,
         request: VectorStoreModificationRequest,
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
+        let url = format!("/vector_stores/{vector_store_id}");
 
         self.0.post_json(&url, &request).await
     }
@@ -175,7 +172,7 @@ impl<'a> VectorsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn delete_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/vector_stores/{vector_store_id}", self.0.base_url);
+        let url = format!("/vector_stores/{vector_store_id}");
 
         self.0.delete(&url).await
     }

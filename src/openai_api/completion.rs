@@ -139,10 +139,7 @@ impl<'a> CompletionsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn create(&self, request: ChatCompletionRequest) -> OpenAIResult<Value> {
-        // Construct the full URL for the chat completions endpoint.
-        let url = format!("{}/chat/completions", self.0.base_url);
-
         // Send a POST request to the chat completions endpoint with the request body.
-        self.0.post_json(&url, &request).await
+        self.0.post_json("/chat/completions", &request).await
     }
 }

@@ -136,9 +136,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn create(&self, request: ThreadRequest) -> OpenAIResult<Value> {
-        let url = format!("{}/threads", self.0.base_url);
-
-        self.0.post_json(&url, &request).await
+        self.0.post_json("/threads", &request).await
     }
 
     /// Retrieve the details of a specific thread by its ID.
@@ -152,7 +150,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn retrieve(&self, thread_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}");
 
         self.0.get(&url).await
     }
@@ -169,7 +167,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}");
 
         self.0.post_json(&url, &request).await
     }
@@ -185,7 +183,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn delete(&self, thread_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}");
 
         self.0.delete(&url).await
     }
@@ -212,7 +210,7 @@ impl<'a> ThreadsApi<'a> {
         attachments: Option<Value>,
         metadata: Option<Value>,
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}/messages", self.0.base_url);
+        let url = format!("/threads/{thread_id}/messages");
         let body = CreateMessageRequest {
             role,
             content,
@@ -245,7 +243,7 @@ impl<'a> ThreadsApi<'a> {
         after: Option<&str>,
         before: Option<&str>,
     ) -> OpenAIResult<Value> {
-        let mut url = format!("{}/threads/{thread_id}/messages?", self.0.base_url);
+        let mut url = format!("/threads/{thread_id}/messages?");
 
         extend_url_params!(url, limit, order, after, before);
         url.pop();
@@ -265,10 +263,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn retrieve_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/messages/{message_id}",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/messages/{message_id}");
 
         self.0.get(&url).await
     }
@@ -291,10 +286,7 @@ impl<'a> ThreadsApi<'a> {
         message_id: &str,
         metadata: Value,
     ) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/messages/{message_id}",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/messages/{message_id}");
         let body = ModifyMessageRequest { metadata };
 
         self.0.post_json(&url, &body).await
@@ -312,10 +304,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn delete_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/messages/{message_id}",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/messages/{message_id}");
 
         self.0.delete(&url).await
     }
@@ -350,7 +339,7 @@ impl<'a> ThreadsApi<'a> {
         parallel_tool_calls: Option<bool>,
         response_format: Option<Value>,
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}/runs", self.0.base_url);
+        let url = format!("/threads/{thread_id}/runs");
         let body = CreateRunRequest {
             assistant_id,
             model,
@@ -395,7 +384,7 @@ impl<'a> ThreadsApi<'a> {
         after: Option<&str>,
         before: Option<&str>,
     ) -> OpenAIResult<Value> {
-        let mut url = format!("{}/threads/{thread_id}/runs?", self.0.base_url);
+        let mut url = format!("/threads/{thread_id}/runs?");
 
         extend_url_params!(url, limit, order, after, before);
         url.pop();
@@ -415,7 +404,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn retrieve_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}/runs/{run_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}/runs/{run_id}");
 
         self.0.get(&url).await
     }
@@ -438,7 +427,7 @@ impl<'a> ThreadsApi<'a> {
         run_id: &str,
         metadata: Value,
     ) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}/runs/{run_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}/runs/{run_id}");
         let body = ModifyMessageRequest { metadata };
 
         self.0.post_json(&url, &body).await
@@ -456,7 +445,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn delete_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
-        let url = format!("{}/threads/{thread_id}/runs/{run_id}", self.0.base_url);
+        let url = format!("/threads/{thread_id}/runs/{run_id}");
 
         self.0.delete(&url).await
     }
@@ -481,10 +470,7 @@ impl<'a> ThreadsApi<'a> {
         tool_outputs: Vec<Value>,
         stream: Option<bool>,
     ) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/runs/{run_id}/submit_tool_outputs",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/runs/{run_id}/submit_tool_outputs");
         let body = SubmitToolRequest {
             tool_outputs,
             stream,
@@ -505,10 +491,7 @@ impl<'a> ThreadsApi<'a> {
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
     pub async fn cancel_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/runs/{run_id}/cancel",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/runs/{run_id}/cancel");
         let body = json!({});
 
         self.0.post_json(&url, &body).await
@@ -538,10 +521,7 @@ impl<'a> ThreadsApi<'a> {
         after: Option<&str>,
         before: Option<&str>,
     ) -> OpenAIResult<Value> {
-        let mut url = format!(
-            "{}/threads/{thread_id}/runs/{run_id}/steps?",
-            self.0.base_url
-        );
+        let mut url = format!("/threads/{thread_id}/runs/{run_id}/steps?");
 
         extend_url_params!(url, limit, order, after, before);
         url.pop();
@@ -567,10 +547,7 @@ impl<'a> ThreadsApi<'a> {
         run_id: &str,
         step_id: &str,
     ) -> OpenAIResult<Value> {
-        let url = format!(
-            "{}/threads/{thread_id}/runs/{run_id}/steps/{step_id}",
-            self.0.base_url
-        );
+        let url = format!("/threads/{thread_id}/runs/{run_id}/steps/{step_id}");
 
         self.0.get(&url).await
     }

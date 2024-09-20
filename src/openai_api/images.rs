@@ -57,9 +57,6 @@ impl<'a> ImagesApi<'a> {
         n: Option<u64>,                // Optional number of images to generate
         user: Option<&str>,            // Optional user ID
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the image generation endpoint.
-        let url = format!("{}/images/generations", self.0.base_url);
-
         // Initialize a JSON object to build the request body.
         let body = GenerateImageRequest {
             prompt,
@@ -71,7 +68,7 @@ impl<'a> ImagesApi<'a> {
         };
 
         // Send a POST request to the image generation endpoint with the request body.
-        self.0.post_json(&url, &body).await
+        self.0.post_json("/images/generations", &body).await
     }
 
     /// Edit an existing image using the provided parameters and mask.
@@ -102,9 +99,6 @@ impl<'a> ImagesApi<'a> {
         n: Option<u64>,                // Optional number of edited images to generate
         user: Option<&str>,            // Optional user ID
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the image editing endpoint.
-        let url = format!("{}/images/edits", self.0.base_url);
-
         // Open and read the image file asynchronously.
         let image_buffer = fs::read(image_path).await?;
         let image_part = multipart::Part::bytes(image_buffer)
@@ -127,7 +121,7 @@ impl<'a> ImagesApi<'a> {
         extend_form_text_fields!(form, size, response_format, n, user);
 
         // Send a POST request to the image editing endpoint with the multipart form.
-        self.0.post_form(&url, form).await
+        self.0.post_form("/images/edits", form).await
     }
 
     /// Create variations of an existing image using the provided parameters.
@@ -154,9 +148,6 @@ impl<'a> ImagesApi<'a> {
         n: Option<u64>,                // Optional number of variation images to generate
         user: Option<&str>,            // Optional user ID
     ) -> OpenAIResult<Value> {
-        // Construct the full URL for the image variations endpoint.
-        let url = format!("{}/images/variations", self.0.base_url);
-
         // Open and read the image file asynchronously.
         let buffer = fs::read(image_path).await?;
         let image_part = multipart::Part::bytes(buffer)
@@ -171,6 +162,6 @@ impl<'a> ImagesApi<'a> {
         extend_form_text_fields!(form, size, response_format, n, user);
 
         // Send a POST request to the image variations endpoint with the multipart form.
-        self.0.post_form(&url, form).await
+        self.0.post_form("/images/variations", form).await
     }
 }
