@@ -1,13 +1,13 @@
-use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI};
+use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, setters};
 use serde::Serialize;
 use serde_json::{json, Value};
 
 /// ThreadsApi struct to interact with thread management endpoints of the API.
 pub struct ThreadsApi<'a>(pub(crate) &'a OpenAI);
 
-/// Struct representing a request to create or modify a thread.
+/// Struct representing a request to create a thread.
 #[derive(Default, Serialize)]
-pub struct ThreadRequest {
+pub struct ThreadCreationRequest {
     /// Optional list of messages in the thread
     #[serde(skip_serializing_if = "Option::is_none")]
     messages: Option<Vec<Value>>,
@@ -21,23 +21,38 @@ pub struct ThreadRequest {
     metadata: Option<Value>,
 }
 
-impl ThreadRequest {
-    /// Set messages for the thread.
-    pub fn messages(mut self, messages: Vec<Value>) -> Self {
-        self.messages = Some(messages);
-        self
-    }
+/// Struct representing a request to modify a thread.
+#[derive(Default, Serialize)]
+pub struct ThreadModificationRequest {
+    /// Optional tool resources related to the thread
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tool_resources: Option<Value>,
 
-    /// Set tool resources for the thread.
-    pub fn tool_resources(mut self, tool_resources: Value) -> Self {
-        self.tool_resources = Some(tool_resources);
-        self
-    }
+    /// Optional metadata associated with the thread
+    #[serde(skip_serializing_if = "Option::is_none")]
+    metadata: Option<Value>,
+}
 
-    /// Set metadata for the thread.
-    pub fn metadata(mut self, metadata: Value) -> Self {
-        self.metadata = Some(metadata);
-        self
+impl ThreadCreationRequest {
+    setters! {
+        /// Set messages for the thread.
+        messages: Vec<Value>,
+
+        /// Set tool resources for the thread.
+        tool_resources: Value,
+
+        /// Set metadata for the thread.
+        metadata: Value,
+    }
+}
+
+impl ThreadModificationRequest {
+    setters! {
+        /// Set tool resources for the thread.
+        tool_resources: Value,
+
+        /// Set metadata for the thread.
+        metadata: Value,
     }
 }
 
@@ -129,13 +144,13 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - A ThreadRequest containing the parameters for the new thread.
+    /// * `request` - A ThreadCreationRequest containing the parameters for the new thread.
     ///
     /// # Returns
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn create(&self, request: ThreadRequest) -> OpenAIResult<Value> {
+    pub async fn create(&self, request: ThreadCreationRequest) -> OpenAIResult<Value> {
         self.0.post_json("/threads", &request).await
     }
 
@@ -160,13 +175,17 @@ impl<'a> ThreadsApi<'a> {
     /// # Arguments
     ///
     /// * `thread_id` - The ID of the thread to be modified.
-    /// * `request` - A ThreadRequest containing the modification parameters.
+    /// * `request` - A ThreadModificationRequest containing the modification parameters.
     ///
     /// # Returns
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> OpenAIResult<Value> {
+    pub async fn modify(
+        &self,
+        thread_id: &str,
+        request: ThreadModificationRequest,
+    ) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}");
 
         self.0.post_json(&url, &request).await

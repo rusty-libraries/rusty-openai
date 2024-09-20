@@ -1,4 +1,4 @@
-use crate::{error_handling::OpenAIResult, openai::OpenAI};
+use crate::{error_handling::OpenAIResult, openai::OpenAI, setters};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -6,7 +6,7 @@ use serde_json::Value;
 pub struct CompletionsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for chat completions.
-#[derive(Serialize)]
+#[derive(Default, Serialize)]
 pub struct ChatCompletionRequest {
     /// Model name to be used for the chat completion
     model: String,
@@ -57,73 +57,28 @@ pub struct ChatCompletionRequest {
 
 impl ChatCompletionRequest {
     /// Create a new instance of ChatCompletionRequest.
+    #[inline(always)]
     pub fn new(model: String, messages: Vec<Value>) -> Self {
-        ChatCompletionRequest {
+        Self {
             model,
             messages,
-            max_tokens: None,
-            temperature: None,
-            top_p: None,
-            n: None,
-            stream: None,
-            stop: None,
-            presence_penalty: None,
-            frequency_penalty: None,
-            logit_bias: None,
-            user: None,
+            ..Default::default()
         }
     }
 
     // Fluent setter methods to set each option on the request.
 
-    pub fn max_tokens(mut self, max_tokens: u64) -> Self {
-        self.max_tokens = Some(max_tokens);
-        self
-    }
-
-    pub fn temperature(mut self, temperature: f64) -> Self {
-        self.temperature = Some(temperature);
-        self
-    }
-
-    pub fn top_p(mut self, top_p: f64) -> Self {
-        self.top_p = Some(top_p);
-        self
-    }
-
-    pub fn n(mut self, n: u64) -> Self {
-        self.n = Some(n);
-        self
-    }
-
-    pub fn stream(mut self, stream: bool) -> Self {
-        self.stream = Some(stream);
-        self
-    }
-
-    pub fn stop(mut self, stop: Vec<String>) -> Self {
-        self.stop = Some(stop);
-        self
-    }
-
-    pub fn presence_penalty(mut self, presence_penalty: f64) -> Self {
-        self.presence_penalty = Some(presence_penalty);
-        self
-    }
-
-    pub fn frequency_penalty(mut self, frequency_penalty: f64) -> Self {
-        self.frequency_penalty = Some(frequency_penalty);
-        self
-    }
-
-    pub fn logit_bias(mut self, logit_bias: Value) -> Self {
-        self.logit_bias = Some(logit_bias);
-        self
-    }
-
-    pub fn user(mut self, user: String) -> Self {
-        self.user = Some(user);
-        self
+    setters! {
+        max_tokens: u64,
+        temperature: f64,
+        top_p: f64,
+        n: u64,
+        stream: bool,
+        stop: Vec<String>,
+        presence_penalty: f64,
+        frequency_penalty: f64,
+        logit_bias: Value,
+        user: String,
     }
 }
 

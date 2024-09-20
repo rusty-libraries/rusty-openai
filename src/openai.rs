@@ -19,7 +19,7 @@ impl OpenAI {
     pub fn new(api_key: &str, base_url: &str) -> Self {
         let default_base_url = "https://api.openai.com/v1";
 
-        OpenAI {
+        Self {
             client: Client::new(),
             authorization: format!("Bearer {api_key}"),
             base_url: {

@@ -1,4 +1,4 @@
-use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI};
+use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, setters};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -46,34 +46,21 @@ pub struct VectorStoreModificationRequest {
 }
 
 impl VectorStoreCreationRequest {
-    /// Set file IDs for the request.
-    pub fn file_ids(mut self, file_ids: Vec<String>) -> Self {
-        self.file_ids = Some(file_ids);
-        self
-    }
+    setters! {
+        /// Set file IDs for the request.
+        file_ids: Vec<String>,
 
-    /// Set name for the request.
-    pub fn name(mut self, name: String) -> Self {
-        self.name = Some(name);
-        self
-    }
+        /// Set name for the request.
+        name: String,
 
-    /// Set expiration date for the request.
-    pub fn expires_after(mut self, expires_after: Value) -> Self {
-        self.expires_after = Some(expires_after);
-        self
-    }
+        /// Set expiration date for the request.
+        expires_after: Value,
 
-    /// Set chunking strategy for the request.
-    pub fn chunking_strategy(mut self, chunking_strategy: Value) -> Self {
-        self.chunking_strategy = Some(chunking_strategy);
-        self
-    }
+        /// Set chunking strategy for the request.
+        chunking_strategy: Value,
 
-    /// Set metadata for the request.
-    pub fn metadata(mut self, metadata: Value) -> Self {
-        self.metadata = Some(metadata);
-        self
+        /// Set metadata for the request.
+        metadata: Value,
     }
 }
 

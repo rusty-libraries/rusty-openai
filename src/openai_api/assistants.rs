@@ -1,4 +1,4 @@
-use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI};
+use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, setters};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -6,8 +6,8 @@ use serde_json::Value;
 pub struct AssistantsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for creating or modifying an assistant.
-#[derive(Serialize)]
-pub struct AssistantRequest {
+#[derive(Default, Serialize)]
+pub struct AssistantCreationRequest {
     /// Model name to be used for the assistant
     model: String,
 
@@ -48,8 +48,81 @@ pub struct AssistantRequest {
     response_format: Option<Value>,
 }
 
-impl AssistantRequest {
-    /// Create a new instance of AssistantRequest.
+/// Struct representing a request for creating or modifying an assistant.
+#[derive(Default, Serialize)]
+pub struct AssistantModificationRequest {
+    /// Name for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// Description of the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+
+    /// Instructions for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    instructions: Option<String>,
+
+    /// Tools to be used by the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tools: Option<Vec<Value>>,
+
+    /// Resources for the tools
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tool_resources: Option<Value>,
+
+    /// Metadata for the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    metadata: Option<Value>,
+
+    /// Sampling temperature
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f64>,
+
+    /// Nucleus sampling parameter
+    #[serde(skip_serializing_if = "Option::is_none")]
+    top_p: Option<f64>,
+
+    /// Format of responses from the assistant
+    #[serde(skip_serializing_if = "Option::is_none")]
+    response_format: Option<Value>,
+}
+
+macro_rules! assistant_creation_impl {
+    () => {
+        setters! {
+            /// Set the name for the assistant request.
+            name: String,
+
+            /// Set the description for the assistant request.
+            description: String,
+
+            /// Set the instructions for the assistant request.
+            instructions: String,
+
+            /// Set the tools for the assistant request.
+            tools: Vec<Value>,
+
+            /// Set the tool resources for the assistant request.
+            tool_resources: Value,
+
+            /// Set the metadata for the assistant request.
+            metadata: Value,
+
+            /// Set the temperature for the assistant request.
+            temperature: f64,
+
+            /// Set the top_p parameter for the assistant request.
+            top_p: f64,
+
+            /// Set the response format for the assistant request.
+            response_format: Value,
+        }
+    };
+}
+
+impl AssistantCreationRequest {
+    /// Create a new instance of AssistantCreationRequest.
     ///
     /// # Arguments
     ///
@@ -57,75 +130,19 @@ impl AssistantRequest {
     ///
     /// # Returns
     ///
-    /// A new instance of AssistantRequest.
+    /// A new instance of AssistantCreationRequest.
     pub fn new(model: String) -> Self {
-        AssistantRequest {
+        Self {
             model,
-            name: None,
-            description: None,
-            instructions: None,
-            tools: None,
-            tool_resources: None,
-            metadata: None,
-            temperature: None,
-            top_p: None,
-            response_format: None,
+            ..Default::default()
         }
     }
 
-    /// Set the name for the assistant request.
-    pub fn name(mut self, name: String) -> Self {
-        self.name = Some(name);
-        self
-    }
+    assistant_creation_impl!();
+}
 
-    /// Set the description for the assistant request.
-    pub fn description(mut self, description: String) -> Self {
-        self.description = Some(description);
-        self
-    }
-
-    /// Set the instructions for the assistant request.
-    pub fn instructions(mut self, instructions: String) -> Self {
-        self.instructions = Some(instructions);
-        self
-    }
-
-    /// Set the tools for the assistant request.
-    pub fn tools(mut self, tools: Vec<Value>) -> Self {
-        self.tools = Some(tools);
-        self
-    }
-
-    /// Set the tool resources for the assistant request.
-    pub fn tool_resources(mut self, tool_resources: Value) -> Self {
-        self.tool_resources = Some(tool_resources);
-        self
-    }
-
-    /// Set the metadata for the assistant request.
-    pub fn metadata(mut self, metadata: Value) -> Self {
-        self.metadata = Some(metadata);
-        self
-    }
-
-    /// Set the temperature for the assistant request.
-    pub fn temperature(mut self, temperature: f64) -> Self {
-        self.temperature = Some(temperature);
-        self
-    }
-
-    /// Set the top_p parameter for the assistant request.
-    pub fn top_p(mut self, top_p: f64) -> Self {
-        self.top_p = Some(top_p);
-        self
-    }
-
-    /// Set the response format for the assistant request.
-    pub fn response_format(mut self, response_format: Value) -> Self {
-        self.response_format = Some(response_format);
-        self
-    }
+impl AssistantModificationRequest {
+    assistant_creation_impl!();
 }
 
 impl<'a> AssistantsApi<'a> {
@@ -133,13 +150,13 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - An AssistantRequest containing the parameters for the assistant.
+    /// * `request` - An AssistantCreationRequest containing the parameters for the assistant.
     ///
     /// # Returns
     ///
     /// A Result containing the JSON response as `serde_json::Value` on success,
     /// or an OpenAIError on failure.
-    pub async fn create(&self, request: AssistantRequest) -> OpenAIResult<Value> {
+    pub async fn create(&self, request: AssistantCreationRequest) -> OpenAIResult<Value> {
         // Send a POST request to the assistants endpoint with the request body.
         self.0.post_json("/assistants", &request).await
     }
@@ -193,7 +210,7 @@ impl<'a> AssistantsApi<'a> {
     /// # Arguments
     ///
     /// * `assistant_id` - The ID of the assistant to modify.
-    /// * `request` - An AssistantRequest containing the parameters for the assistant modification.
+    /// * `request` - An AssistantModificationRequest containing the parameters for the assistant modification.
     ///
     /// # Returns
     ///
@@ -202,7 +219,7 @@ impl<'a> AssistantsApi<'a> {
     pub async fn modify(
         &self,
         assistant_id: &str,
-        request: AssistantRequest,
+        request: AssistantModificationRequest,
     ) -> OpenAIResult<Value> {
         let url = format!("/assistants/{assistant_id}");
 
