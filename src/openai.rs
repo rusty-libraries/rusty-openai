@@ -60,11 +60,7 @@ impl<'a> OpenAI<'a> {
             .await?)
     }
 
-    pub async fn post_form<T: DeserializeOwned>(
-        &self,
-        url: &str,
-        form: Form,
-    ) -> OpenAIResult<T> {
+    pub async fn post_form<T: DeserializeOwned>(&self, url: &str, form: Form) -> OpenAIResult<T> {
         Ok(self
             .client
             .post(format!("{}{url}", self.base_url))
@@ -87,8 +83,8 @@ impl<'a> OpenAI<'a> {
             .await?)
     }
 
-    pub fn get_base_url(&self) -> &str {
-        &self.base_url
+    pub const fn get_base_url(&self) -> &str {
+        self.base_url
     }
 
     pub fn set_base_url(&mut self, base_url: &'a str) {
