@@ -5,11 +5,15 @@ license-file = "LICENSE.md"
 documentation = "https://pleaseful.github.io/rusty-openai/"
 readme = "README.md"
 homepage = "https://github.com/pleaseful/rusty-openai"
+keywords = ["openai", "ai", "artificial-intelligence", "api"]
+categories = ["api-bindings", "web-programming"]
+exclude = ["docs/", "rustfmt.toml"]
 version = "0.1.5"
 edition = "2021"
 
 [dependencies]
-reqwest = { version = "0.12.5", features = ["json", "blocking", "multipart"] }
-serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json", "blocking", "multipart"] }
+serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-serde_json = "1.0"
+serde_json = "1"
+thiserror = "1"

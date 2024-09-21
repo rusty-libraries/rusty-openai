@@ -1,25 +1,32 @@
-use crate::request_client::RequestClient;
-use crate::error_handling::OpenAIError;
-use serde_json::json;
+use crate::{error_handling::OpenAIResult, openai::OpenAI};
+use serde::Serialize;
 use serde_json::Value;
 
-/// EmbeddingsApi struct to interact with the embeddings endpoint of the API.
-pub struct EmbeddingsApi<'a> {
-    client: &'a RequestClient,  // Reference to the HTTP client
-    base_url: &'a str,          // Base URL for the API
+/// [`EmbeddingsApi`] struct to interact with the embeddings endpoint of the API.
+pub struct EmbeddingsApi<'a>(pub(crate) &'a OpenAI<'a>);
+
+#[derive(Serialize)]
+struct AssistantRequest<'a> {
+    /// The input text for which to create embeddings.
+    input: &'a str,
+
+    /// Embedding model to use
+    model: &'a str,
+
+    /// Optional encoding format
+    #[serde(skip_serializing_if = "Option::is_none")]
+    encoding_format: Option<&'a str>,
+
+    /// Optional number of dimensions
+    #[serde(skip_serializing_if = "Option::is_none")]
+    dimensions: Option<u64>,
+
+    /// Optional user ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    user: Option<&'a str>,
 }
 
 impl<'a> EmbeddingsApi<'a> {
-    /// Create a new instance of EmbeddingsApi.
-    ///
-    /// # Arguments
-    ///
-    /// * `client` - A reference to the RequestClient.
-    /// * `base_url` - The base URL for the API.
-    pub fn new(client: &'a RequestClient, base_url: &'a str) -> Self {
-        EmbeddingsApi { client, base_url }
-    }
-
     /// Create an embedding using the provided parameters.
     ///
     /// # Arguments
@@ -32,51 +39,25 @@ impl<'a> EmbeddingsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create(
-        &self, 
-        input: &str,               // Input text for embedding
-        model: &str,               // Embedding model to use
-        encoding_format: Option<&str>,  // Optional encoding format
-        dimensions: Option<u64>,   // Optional number of dimensions
-        user: Option<&str>         // Optional user ID
-    ) -> Result<Value, OpenAIError> {
-        // Construct the full URL for the embeddings endpoint.
-        let url = format!("{}/embeddings", self.base_url);
-        
+        &self,
+        input: &str,
+        model: &str,                   // Embedding model to use
+        encoding_format: Option<&str>, // Optional encoding format
+        dimensions: Option<u64>,       // Optional number of dimensions
+        user: Option<&str>,            // Optional user ID
+    ) -> OpenAIResult<Value> {
         // Initialize a JSON object to build the request body.
-        let mut body = json!({
-            "input": input,
-            "model": model
-        });
-
-        // Insert optional fields if they are provided.
-        if let Some(encoding_format) = encoding_format {
-            if let Value::Object(map) = &mut body {
-                map.insert("encoding_format".to_string(), json!(encoding_format));
-            }
-        }
-
-        if let Some(dimensions) = dimensions {
-            if let Value::Object(map) = &mut body {
-                map.insert("dimensions".to_string(), json!(dimensions));
-            }
-        }
-
-        if let Some(user) = user {
-            if let Value::Object(map) = &mut body {
-                map.insert("user".to_string(), json!(user));
-            }
-        }
+        let body = AssistantRequest {
+            input,
+            model,
+            encoding_format,
+            dimensions,
+            user,
+        };
 
         // Send a POST request to the embeddings endpoint with the request body.
-        let response = self.client.post(&url, &body).await?;
-
-        // Parse the JSON response body.
-        let json: Value = response.json().await?;
-        
-        // Return the parsed JSON response.
-        Ok(json)
+        self.0.post_json("/embeddings", &body).await
     }
 }
