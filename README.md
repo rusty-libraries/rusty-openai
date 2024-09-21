@@ -21,7 +21,7 @@ To use this SDK, add the following dependencies to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-rusty-openai = "0.1.5"
+rusty-openai = "0.1.6"
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json", "multipart"] }
