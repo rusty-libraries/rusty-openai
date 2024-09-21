@@ -693,6 +693,206 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### Projects API
+
+#### List Projects
+
+**Functionality:**  
+Retrieve a list of projects within an organization.
+
+**Method:**  
+GET `/v1/organization/projects`
+
+**Parameters:**
+
+- **limit (Option<u8>):**  
+  A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
+
+- **after (Option<&str>):**  
+  A cursor for use in pagination. `after` is an object ID that defines your place in the list.
+
+- **include_archived (Option<bool>):**  
+  If true, returns all projects including those that have been archived. Archived projects are not included by default.
+
+**Response:**
+
+- A list of Project objects.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let response = openai.projects().list_projects(Some(20), Some("proj_abc"), Some(false)).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Create Project
+
+**Functionality:**  
+Create a new project in the organization.
+
+**Method:**  
+POST `/v1/organization/projects`
+
+**Parameters:**
+
+- **name (string, required):**  
+  The friendly name of the project, this name appears in reports.
+
+- **app_use_case (Option<&str>):**  
+  A description of your business, project, or use case.
+
+- **business_website (Option<&str>):**  
+  Your business URL, or if you don't have one yet, a URL to your LinkedIn or other social media.
+
+**Response:**
+
+- The created Project object.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let response = openai.projects().create_project(
+        "Project ABC",
+        Some("Your project use case here"),
+        Some("https://example.com")
+    ).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Retrieve Project
+
+**Functionality:**  
+Retrieve information about a specific project.
+
+**Method:**  
+GET `/v1/organization/projects/{project_id}`
+
+**Parameters:**
+
+- **project_id (string, required):**  
+  The ID of the project to retrieve.
+
+**Response:**
+
+- The Project object matching the specified ID.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let project_id = "proj_abc";
+    let response = openai.projects().retrieve_project(project_id).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Modify Project
+
+**Functionality:**  
+Modify an existing project in the organization.
+
+**Method:**  
+POST `/v1/organization/projects/{project_id}`
+
+**Parameters:**
+
+- **project_id (string, required):**  
+  The ID of the project to modify.
+
+- **name (string, required):**  
+  The updated name of the project, this name appears in reports.
+
+- **app_use_case (Option<&str>):**  
+  An updated description of your business, project, or use case.
+
+- **business_website (Option<&str>):**  
+  An updated business URL, or if you don't have one yet, a URL to your LinkedIn or other social media.
+
+**Response:**
+
+- The updated Project object.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let project_id = "proj_abc";
+    let response = openai.projects().modify_project(
+        project_id,
+        "Project DEF",
+        Some("Updated project use case"),
+        Some("https://example.com")
+    ).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Archive Project
+
+**Functionality:**  
+Archive a project in the organization. Archived projects cannot be used or updated.
+
+**Method:**  
+POST `/v1/organization/projects/{project_id}/archive`
+
+**Parameters:**
+
+- **project_id (string, required):**  
+  The ID of the project to archive.
+
+**Response:**
+
+- The archived Project object.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let project_id = "proj_abc";
+    let response = openai.projects().archive_project(project_id).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
 ### Utilties
 
 #### Utility Functions
@@ -724,58 +924,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
       }
   }
   ```
-
----
-
-## Getting Started
-
-Before using the SDK, ensure you have the necessary dependencies added to your `Cargo.toml` file:
-
-```toml
-[dependencies]
-rusty_openai = "0.1.6"
-serde_json = "1.0"
-tokio = { version = "1", features = ["full"] }
-reqwest = { version = "0.12.5", features = ["json", "multipart"] }
-```
-
-### Initialize OpenAI Client
-
-Create an instance of OpenAI with your API key:
-
-```rust
-use rusty_openai::openai::OpenAI;
-
-#[tokio::main]
-async fn main() {
-    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
-}
-```
-
-### Example: Generate a Chat Completion
-
-```rust
-use serde_json::json;
-use rusty_openai::openai::OpenAI;
-use rusty_openai::openai_api::completion::ChatCompletionRequest;
-
-#[tokio::main]
-async fn main() {
-    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
-
-    let messages = vec![
-        json!({
-            "role": "user",
-            "content": "Hello, how are you?"
-        }),
-    ];
-
-    let request = ChatCompletionRequest::new("gpt-4".to_string(), messages)
-        .max_tokens(150)
-        .temperature(0.7);
-
-    match openai.completions().create(request).await {
-        Ok(response) => println!("{}", serde_json::to_string_pretty(&response).unwrap()),
-        Err(err) => eprintln!("Error: {}", err),
-    }
-}
