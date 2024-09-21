@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, openai::OpenAI};
 use serde::Serialize;
 use serde_json::Value;
 
-/// ModerationApi struct to interact with the moderation endpoint of the API.
+/// [`ModerationApi`] struct to interact with the moderation endpoint of the API.
 pub struct ModerationApi<'a>(pub(crate) &'a OpenAI);
 
 #[derive(Serialize)]
@@ -25,8 +25,7 @@ impl<'a> ModerationApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn moderate(&self, input: &str, model: Option<&str>) -> OpenAIResult<Value> {
         // Initialize a JSON object to build the request body.
         let body = ModerationRequest { input, model };

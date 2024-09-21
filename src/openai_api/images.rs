@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json::Value;
 use tokio::fs;
 
-/// ImagesApi struct to interact with the image generation, editing, and variation endpoints of the API.
+/// [`ImagesApi`] struct to interact with the image generation, editing, and variation endpoints of the API.
 pub struct ImagesApi<'a>(pub(crate) &'a OpenAI);
 
 #[derive(Serialize)]
@@ -46,8 +46,7 @@ impl<'a> ImagesApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn generate(
         &self,
         prompt: &str,                  // The text prompt to generate the image from
@@ -86,8 +85,7 @@ impl<'a> ImagesApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn edit(
         &self,
         model: &str,                   // The model to use for editing the image
@@ -137,8 +135,7 @@ impl<'a> ImagesApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn variation(
         &self,
         model: &str,                   // The model to use for generating variations

@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, openai::OpenAI};
 use serde::Serialize;
 use serde_json::Value;
 
-/// FineTuningApi struct to interact with the fine-tuning endpoints of the API.
+/// [`FineTuningApi`] struct to interact with the fine-tuning endpoints of the API.
 pub struct FineTuningApi<'a>(pub(crate) &'a OpenAI);
 
 #[derive(Serialize)]
@@ -69,8 +69,7 @@ impl<'a> FineTuningApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create_fine_tuning_job(
         &self,
         model: &str,                                  // Model to be fine-tuned
@@ -108,8 +107,7 @@ impl<'a> FineTuningApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
 
     pub async fn list_fine_tuning_jobs(&self) -> OpenAIResult<Value> {
         // Send a GET request to the fine-tuning jobs endpoint.
@@ -124,8 +122,7 @@ impl<'a> FineTuningApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve_fine_tuning_job(&self, job_id: &str) -> OpenAIResult<Value> {
         // Construct the full URL for retrieving a specific fine-tuning job.
         let url = format!("/fine-tuning/jobs/{job_id}");

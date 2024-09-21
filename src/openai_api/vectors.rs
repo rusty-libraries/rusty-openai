@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, set
 use serde::Serialize;
 use serde_json::Value;
 
-/// VectorsApi struct to interact with vector stores API endpoints.
+/// [`VectorsApi`] struct to interact with vector stores API endpoints.
 pub struct VectorsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for vector store creation.
@@ -69,12 +69,11 @@ impl<'a> VectorsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - A VectorStoreCreationRequest containing the parameters for the vector store.
+    /// * `request` - A [`VectorStoreCreationRequest`] containing the parameters for the vector store.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create_vector_store(
         &self,
         request: VectorStoreCreationRequest,
@@ -94,8 +93,7 @@ impl<'a> VectorsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn list_vector_stores(
         &self,
         limit: Option<u64>,
@@ -119,8 +117,7 @@ impl<'a> VectorsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
         let url = format!("/vector_stores/{vector_store_id}");
 
@@ -132,12 +129,11 @@ impl<'a> VectorsApi<'a> {
     /// # Arguments
     ///
     /// * `vector_store_id` - The ID of the vector store to modify.
-    /// * `request` - A VectorStoreModificationRequest containing the parameters for the vector store modification.
+    /// * `request` - A [`VectorStoreModificationRequest`] containing the parameters for the vector store modification.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn modify_vector_store(
         &self,
         vector_store_id: &str,
@@ -156,8 +152,7 @@ impl<'a> VectorsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn delete_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value> {
         let url = format!("/vector_stores/{vector_store_id}");
 

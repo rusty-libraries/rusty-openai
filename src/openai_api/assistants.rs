@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, set
 use serde::Serialize;
 use serde_json::Value;
 
-/// AssistantsApi struct to interact with the assistants endpoints of the API.
+/// [`AssistantsApi`] struct to interact with the assistants endpoints of the API.
 pub struct AssistantsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for creating or modifying an assistant.
@@ -122,7 +122,7 @@ macro_rules! assistant_creation_impl {
 }
 
 impl AssistantCreationRequest {
-    /// Create a new instance of AssistantCreationRequest.
+    /// Create a new instance of [`AssistantCreationRequest`].
     ///
     /// # Arguments
     ///
@@ -130,7 +130,7 @@ impl AssistantCreationRequest {
     ///
     /// # Returns
     ///
-    /// A new instance of AssistantCreationRequest.
+    /// A new instance of [`AssistantCreationRequest`].
     pub fn new(model: String) -> Self {
         Self {
             model,
@@ -150,12 +150,11 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - An AssistantCreationRequest containing the parameters for the assistant.
+    /// * `request` - An [`AssistantCreationRequest`] containing the parameters for the assistant.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create(&self, request: AssistantCreationRequest) -> OpenAIResult<Value> {
         // Send a POST request to the assistants endpoint with the request body.
         self.0.post_json("/assistants", &request).await
@@ -172,8 +171,7 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn list(
         &self,
         limit: Option<u32>,
@@ -197,8 +195,7 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve(&self, assistant_id: &str) -> OpenAIResult<Value> {
         let url = format!("/assistants/{assistant_id}");
 
@@ -210,12 +207,11 @@ impl<'a> AssistantsApi<'a> {
     /// # Arguments
     ///
     /// * `assistant_id` - The ID of the assistant to modify.
-    /// * `request` - An AssistantModificationRequest containing the parameters for the assistant modification.
+    /// * `request` - An [`AssistantModificationRequest`] containing the parameters for the assistant modification.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn modify(
         &self,
         assistant_id: &str,
@@ -234,8 +230,7 @@ impl<'a> AssistantsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn delete(&self, assistant_id: &str) -> OpenAIResult<Value> {
         let url = format!("/assistants/{assistant_id}");
 

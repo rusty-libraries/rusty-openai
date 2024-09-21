@@ -3,7 +3,7 @@ use reqwest::multipart;
 use serde_json::Value;
 use tokio::fs;
 
-/// AudioApi struct to interact with the audio transcription and translation API.
+/// [`AudioApi`] struct to interact with the audio transcription and translation API.
 pub struct AudioApi<'a>(pub(crate) &'a OpenAI);
 
 impl<'a> AudioApi<'a> {

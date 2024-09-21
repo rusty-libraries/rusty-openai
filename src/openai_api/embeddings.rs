@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, openai::OpenAI};
 use serde::Serialize;
 use serde_json::Value;
 
-/// EmbeddingsApi struct to interact with the embeddings endpoint of the API.
+/// [`EmbeddingsApi`] struct to interact with the embeddings endpoint of the API.
 pub struct EmbeddingsApi<'a>(pub(crate) &'a OpenAI);
 
 #[derive(Serialize)]
@@ -39,8 +39,7 @@ impl<'a> EmbeddingsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create(
         &self,
         input: &str,

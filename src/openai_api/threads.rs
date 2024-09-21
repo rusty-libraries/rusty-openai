@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, extend_url_params, openai::OpenAI, set
 use serde::Serialize;
 use serde_json::{json, Value};
 
-/// ThreadsApi struct to interact with thread management endpoints of the API.
+/// [`ThreadsApi`] struct to interact with thread management endpoints of the API.
 pub struct ThreadsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request to create a thread.
@@ -144,12 +144,11 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - A ThreadCreationRequest containing the parameters for the new thread.
+    /// * `request` - A [`ThreadCreationRequest`] containing the parameters for the new thread.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create(&self, request: ThreadCreationRequest) -> OpenAIResult<Value> {
         self.0.post_json("/threads", &request).await
     }
@@ -162,8 +161,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve(&self, thread_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}");
 
@@ -175,12 +173,11 @@ impl<'a> ThreadsApi<'a> {
     /// # Arguments
     ///
     /// * `thread_id` - The ID of the thread to be modified.
-    /// * `request` - A ThreadModificationRequest containing the modification parameters.
+    /// * `request` - A [`ThreadModificationRequest`] containing the modification parameters.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn modify(
         &self,
         thread_id: &str,
@@ -199,8 +196,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn delete(&self, thread_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}");
 
@@ -219,8 +215,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create_message(
         &self,
         thread_id: &str,
@@ -252,8 +247,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn list_messages(
         &self,
         thread_id: &str,
@@ -279,8 +273,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}/messages/{message_id}");
 
@@ -297,8 +290,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn modify_message(
         &self,
         thread_id: &str,
@@ -320,8 +312,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn delete_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}/messages/{message_id}");
 
@@ -336,8 +327,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create_run(
         &self,
         thread_id: &str,
@@ -393,8 +383,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn list_runs(
         &self,
         thread_id: &str,
@@ -420,8 +409,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}/runs/{run_id}");
 
@@ -438,8 +426,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn modify_run(
         &self,
         thread_id: &str,
@@ -461,8 +448,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn delete_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}/runs/{run_id}");
 
@@ -480,8 +466,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn submit_tool_outputs(
         &self,
         thread_id: &str,
@@ -507,8 +492,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn cancel_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value> {
         let url = format!("/threads/{thread_id}/runs/{run_id}/cancel");
         let body = json!({});
@@ -529,8 +513,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn list_run_steps(
         &self,
         thread_id: &str,
@@ -558,8 +541,7 @@ impl<'a> ThreadsApi<'a> {
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn retrieve_run_step(
         &self,
         thread_id: &str,

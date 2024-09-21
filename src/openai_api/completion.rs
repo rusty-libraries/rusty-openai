@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, openai::OpenAI, setters};
 use serde::Serialize;
 use serde_json::Value;
 
-/// CompletionsApi struct to interact with the chat completions endpoint of the API.
+/// [`CompletionsApi`] struct to interact with the chat completions endpoint of the API.
 pub struct CompletionsApi<'a>(pub(crate) &'a OpenAI);
 
 /// Struct representing a request for chat completions.
@@ -56,7 +56,7 @@ pub struct ChatCompletionRequest {
 }
 
 impl ChatCompletionRequest {
-    /// Create a new instance of ChatCompletionRequest.
+    /// Create a new instance of [`ChatCompletionRequest`].
     #[inline(always)]
     pub fn new(model: String, messages: Vec<Value>) -> Self {
         Self {
@@ -87,12 +87,11 @@ impl<'a> CompletionsApi<'a> {
     ///
     /// # Arguments
     ///
-    /// * `request` - A ChatCompletionRequest containing the parameters for the completion.
+    /// * `request` - A [`ChatCompletionRequest`] containing the parameters for the completion.
     ///
     /// # Returns
     ///
-    /// A Result containing the JSON response as `serde_json::Value` on success,
-    /// or an OpenAIError on failure.
+    /// A Result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure.
     pub async fn create(&self, request: ChatCompletionRequest) -> OpenAIResult<Value> {
         // Send a POST request to the chat completions endpoint with the request body.
         self.0.post_json("/chat/completions", &request).await
