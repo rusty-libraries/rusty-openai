@@ -1,26 +1,742 @@
-# OpenAI Rust SDK Documentation
+## OpenAI Rust SDK - Function Documentation
 
-Welcome to the OpenAI Rust SDK documentation. This SDK allows you to interact with OpenAI's API endpoints to perform various tasks such as generating completions, creating images, moderating text, etc.
+### Completions API
+
+#### Create a Chat Completion
+
+**Functionality:**  
+Generate the next message in a conversational exchange by sending a structured list of input messages containing text and/or image content. Supports both single queries and stateless multi-turn conversations.
+
+**Method:**  
+POST `/v1/chat/completions`
+
+**Parameters:**
+
+- **model (string, required):**  
+  The model to use for generating the completion (e.g., "gpt-4").
+
+- **messages (Vec<Value>, required):**  
+  A list of messages representing the conversation history. Each message should specify a role (`"user"` or `"assistant"`) and its content.
+
+- **max_tokens (Option<u64>):**  
+  The maximum number of tokens to generate in the completion.
+
+- **temperature (Option<f64>):**  
+  Controls the randomness of the output. Higher values like 0.8 make the output more random, while lower values like 0.2 make it more focused and deterministic. Default is 1.0.
+
+- **top_p (Option<f64>):**  
+  Controls diversity via nucleus sampling. The model considers the smallest possible set of tokens with a cumulative probability above `top_p`. Default is 1.0.
+
+- **frequency_penalty (Option<f64>):**  
+  How much to penalize new tokens based on their existing frequency in the text so far. Values range from -2.0 to 2.0. Default is 0.
+
+- **presence_penalty (Option<f64>):**  
+  How much to penalize new tokens based on whether they appear in the text so far. Values range from -2.0 to 2.0. Default is 0.
+
+- **stop_sequences (Option<Vec<String>>):**  
+  Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.
+
+- **stream (Option<bool>):**  
+  If set to `true`, partial message deltas will be sent as data-only server-sent events.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the completion.
+
+- **object (string):**  
+  The object type, typically `"chat.completion"`.
+
+- **created (u64):**  
+  Timestamp of when the completion was created.
+
+- **choices (Vec<Choice>):**  
+  Array of generated completions. Each choice contains:
+  - **message (Message):**  
+    The generated message.
+  - **finish_reason (string):**  
+    The reason the completion finished (`"stop"`, `"length"`, etc.).
+  - **index (u32):**  
+    The index of the choice.
+
+- **usage (Usage):**  
+  Information about token usage.
+
+**Usage Example:**
+
+```rust
+use serde_json::json;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::completion::ChatCompletionRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let messages = vec![
+        json!({
+            "role": "user",
+            "content": "Hello, how are you?"
+        }),
+        json!({
+            "role": "assistant",
+            "content": "I'm good, thank you! How can I assist you today?"
+        }),
+    ];
+
+    let request = ChatCompletionRequest::new("gpt-4".to_string(), messages)
+        .max_tokens(150)
+        .temperature(0.7)
+        .stop_sequences(vec!["\n".to_string()]);
+
+    let response = openai.completions().create(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Text Completions API
+
+#### Create a Text Completion
+
+**Functionality:**  
+Generate a text completion based on a provided prompt, allowing for control over various aspects of the completion process.
+
+**Method:**  
+POST `/v1/completions`
+
+**Parameters:**
+
+- **model (string, required):**  
+  The model to use for generating the completion (e.g., "text-davinci-003").
+
+- **prompt (string or Vec<string>, required):**  
+  The input text prompt(s) to generate completions for.
+
+- **max_tokens (Option<u64>):**  
+  The maximum number of tokens to generate in the completion.
+
+- **temperature (Option<f64>):**  
+  Controls the randomness of the output. Higher values like 0.8 make the output more random, while lower values like 0.2 make it more focused and deterministic. Default is 1.0.
+
+- **top_p (Option<f64>):**  
+  Controls diversity via nucleus sampling. The model considers the smallest possible set of tokens with a cumulative probability above `top_p`. Default is 1.0.
+
+- **frequency_penalty (Option<f64>):**  
+  How much to penalize new tokens based on their existing frequency in the text so far. Values range from -2.0 to 2.0. Default is 0.
+
+- **presence_penalty (Option<f64>):**  
+  How much to penalize new tokens based on whether they appear in the text so far. Values range from -2.0 to 2.0. Default is 0.
+
+- **stop_sequences (Option<Vec<String>>):**  
+  Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.
+
+- **n (Option<u32>):**  
+  Number of completions to generate for each prompt.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the completion.
+
+- **object (string):**  
+  The object type, typically `"text_completion"`.
+
+- **created (u64):**  
+  Timestamp of when the completion was created.
+
+- **choices (Vec<Choice>):**  
+  Array of generated completions. Each choice contains:
+  - **text (string):**  
+    The generated completion text.
+  - **index (u32):**  
+    The index of the choice.
+  - **logprobs (Option<Logprobs>):**  
+    Log probabilities of the tokens (if requested).
+  - **finish_reason (string):**  
+    The reason the completion finished (`"stop"`, `"length"`, etc.).
+
+- **usage (Usage):**  
+  Information about token usage.
+
+**Usage Example:**
+
+```rust
+use serde_json::json;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::completion::TextCompletionRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let prompt = "Once upon a time in a land far, far away";
+
+    let request = TextCompletionRequest::new("text-davinci-003".to_string(), prompt.to_string())
+        .max_tokens(100)
+        .temperature(0.6)
+        .stop_sequences(vec!["The end.".to_string()]);
+
+    let response = openai.completions().create_text_completion(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Embeddings API
+
+#### Create Embeddings
+
+**Functionality:**  
+Generate embeddings for a list of input texts, useful for tasks like search, recommendations, and anomaly detection.
+
+**Method:**  
+POST `/v1/embeddings`
+
+**Parameters:**
+
+- **model (string, required):**  
+  The model to use for generating embeddings (e.g., "text-embedding-ada-002").
+
+- **inputs (Vec<String>, required):**  
+  List of input texts to generate embeddings for.
+
+- **input_type (Option<String>):**  
+  The type of input text (e.g., `"query"`, `"document"`).
+
+- **user (Option<String>):**  
+  A unique identifier representing the user, which can help OpenAI monitor and detect abuse.
+
+**Response:**
+
+- **data (Vec<EmbeddingData>):**  
+  Array of embeddings corresponding to each input text. Each embedding contains:
+  - **embedding (Vec<f64>):**  
+    The embedding vector.
+  - **index (u32):**  
+    The index of the input text.
+  - **object (string):**  
+    The object type, typically `"embedding"`.
+
+- **model (string):**  
+  The model used to generate the embeddings.
+
+- **usage (Usage):**  
+  Information about token usage.
+
+**Usage Example:**
+
+```rust
+use serde_json::json;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::embedding::EmbeddingsRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let inputs = vec![
+        "OpenAI develops and promotes friendly AI for the benefit of all humanity.".to_string(),
+        "Rust is a systems programming language focused on safety and performance.".to_string(),
+    ];
+
+    let request = EmbeddingsRequest::new("text-embedding-ada-002".to_string(), inputs)
+        .input_type("document".to_string());
+
+    let response = openai.embeddings().create(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Moderations API
+
+#### Create a Moderation
+
+**Functionality:**  
+Classify content for potential policy violations using OpenAI's moderation models.
+
+**Method:**  
+POST `/v1/moderations`
+
+**Parameters:**
+
+- **input (string or Vec<String>, required):**  
+  The content to be analyzed.
+
+- **model (Option<String>):**  
+  The model to use for moderation. Defaults to the latest available model.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the moderation.
+
+- **model (string):**  
+  The model used for moderation.
+
+- **results (Vec<ModerationResult>):**  
+  Array of moderation results corresponding to each input.
+
+**Usage Example:**
+
+```rust
+use serde_json::json;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::moderation::ModerationRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let inputs = vec![
+        "I want to harm others.".to_string(),
+        "I love sunny days and hiking.".to_string(),
+    ];
+
+    let request = ModerationRequest::new(inputs)
+        .model("text-moderation-stable".to_string());
+
+    let response = openai.moderations().create(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Files API
+
+#### Upload a File
+
+**Functionality:**  
+Upload a file that contains document(s) to be processed by OpenAI's models.
+
+**Method:**  
+POST `/v1/files`
+
+**Parameters:**
+
+- **file (PathBuf, required):**  
+  The path to the file to be uploaded.
+
+- **purpose (string, required):**  
+  The purpose of the file (e.g., `"fine-tune"`).
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the file.
+
+- **object (string):**  
+  The object type, typically `"file"`.
+
+- **bytes (u64):**  
+  Size of the file in bytes.
+
+- **created_at (u64):**  
+  Timestamp of when the file was created.
+
+- **filename (string):**  
+  The name of the uploaded file.
+
+- **purpose (string):**  
+  The purpose of the file.
+
+**Usage Example:**
+
+```rust
+use std::path::PathBuf;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::file::FileRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let file_path = PathBuf::from("path/to/your/file.jsonl");
+    let purpose = "fine-tune".to_string();
+
+    let request = FileRequest::new(file_path, purpose);
+
+    let response = openai.files().upload(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### List Files
+
+**Functionality:**  
+Retrieve a list of files that have been uploaded to your organization.
+
+**Method:**  
+GET `/v1/files`
+
+**Parameters:**
+
+- **limit (Option<u32>):**  
+  The number of files to retrieve.
+
+- **page (Option<u32>):**  
+  The page number for pagination.
+
+**Response:**
+
+- **object (string):**  
+  The object type, typically `"list"`.
+
+- **data (Vec<File>):**  
+  Array of file objects.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::file::ListFilesRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let request = ListFilesRequest::new()
+        .limit(10)
+        .page(1);
+
+    let response = openai.files().list(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Fine-Tunes API
+
+#### Create a Fine-Tune
+
+**Functionality:**  
+Create a fine-tuned model based on a pre-trained OpenAI model and a dataset.
+
+**Method:**  
+POST `/v1/fine-tunes`
+
+**Parameters:**
+
+- **training_file (string, required):**  
+  The ID of the file to use for training.
+
+- **model (string, required):**  
+  The base model to fine-tune (e.g., `"davinci"`).
+
+- **n_epochs (Option<u32>):**  
+  The number of epochs to train for. Default is 4.
+
+- **batch_size (Option<u32>):**  
+  The batch size to use for training. Default is determined by the base model.
+
+- **learning_rate_multiplier (Option<f64>):**  
+  The learning rate multiplier to use for training. Default is 0.1.
+
+- **prompt_loss_weight (Option<f64>):**  
+  The weight to use for the prompt loss. Default is 0.01.
+
+- **compute_classification_metrics (Option<bool>):**  
+  Whether to compute classification metrics. Default is false.
+
+- **classification_n_classes (Option<u32>):**  
+  The number of classes in a classification task.
+
+- **classification_positive_class (Option<String>):**  
+  The positive class in a classification task.
+
+- **classification_betas (Option<Vec<f64>>):**  
+  The set of betas to use for computing F-beta scores.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the fine-tune.
+
+- **object (string):**  
+  The object type, typically `"fine-tune"`.
+
+- **model (string):**  
+  The model being fine-tuned.
+
+- **status (string):**  
+  The status of the fine-tune (`"pending"`, `"running"`, `"succeeded"`, `"failed"`).
+
+- **created_at (u64):**  
+  Timestamp of when the fine-tune was created.
+
+- **updated_at (u64):**  
+  Timestamp of the last update.
+
+- **events (Vec<FineTuneEvent>):**  
+  List of events related to the fine-tune.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::fine_tune::FineTuneRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let training_file_id = "file-abc123";
+    let base_model = "davinci".to_string();
+
+    let request = FineTuneRequest::new(training_file_id, base_model)
+        .n_epochs(5)
+        .batch_size(8)
+        .learning_rate_multiplier(0.05)
+        .prompt_loss_weight(0.02);
+
+    let response = openai.fine_tunes().create(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### List Fine-Tunes
+
+**Functionality:**  
+Retrieve a list of all fine-tuning jobs for your organization.
+
+**Method:**  
+GET `/v1/fine-tunes`
+
+**Parameters:**
+
+- **limit (Option<u32>):**  
+  The number of fine-tunes to retrieve.
+
+- **status (Option<String>):**  
+  Filter fine-tunes by status (`"completed"`, `"pending"`, etc.).
+
+**Response:**
+
+- **object (string):**  
+  The object type, typically `"list"`.
+
+- **data (Vec<FineTune>):**  
+  Array of fine-tune objects.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::fine_tune::ListFineTunesRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let request = ListFineTunesRequest::new()
+        .limit(5)
+        .status("succeeded".to_string());
+
+    let response = openai.fine_tunes().list(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Retrieve a Fine-Tune
+
+**Functionality:**  
+Retrieve information about a specific fine-tuning job.
+
+**Method:**  
+GET `/v1/fine-tunes/{fine_tune_id}`
+
+**Parameters:**
+
+- **fine_tune_id (string, required):**  
+  The ID of the fine-tune to retrieve.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the fine-tune.
+
+- **object (string):**  
+  The object type, typically `"fine-tune"`.
+
+- **model (string):**  
+  The model being fine-tuned.
+
+- **status (string):**  
+  The status of the fine-tune.
+
+- **created_at (u64):**  
+  Timestamp of creation.
+
+- **updated_at (u64):**  
+  Timestamp of the last update.
+
+- **events (Vec<FineTuneEvent>):**  
+  List of events related to the fine-tune.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let fine_tune_id = "ft-123456";
+
+    let response = openai.fine_tunes().retrieve(fine_tune_id).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Models API
+
+#### List Models
+
+**Functionality:**  
+Retrieve a list of available models.
+
+**Method:**  
+GET `/v1/models`
+
+**Parameters:**
+
+- **limit (Option<u32>):**  
+  The number of models to retrieve.
+
+**Response:**
+
+- **object (string):**  
+  The object type, typically `"list"`.
+
+- **data (Vec<Model>):**  
+  Array of model objects.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::model::ListModelsRequest;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let request = ListModelsRequest::new().limit(10);
+
+    let response = openai.models().list(request).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+#### Retrieve a Model
+
+**Functionality:**  
+Retrieve details about a specific model.
+
+**Method:**  
+GET `/v1/models/{model_id}`
+
+**Parameters:**
+
+- **model_id (string, required):**  
+  The ID of the model to retrieve.
+
+**Response:**
+
+- **id (string):**  
+  Unique identifier for the model.
+
+- **object (string):**  
+  The object type, typically `"model"`.
+
+- **created (u64):**  
+  Timestamp of creation.
+
+- **owned_by (string):**  
+  The owner of the model.
+
+- **permissions (Vec<Permission>):**  
+  Permissions associated with the model.
+
+**Usage Example:**
+
+```rust
+use rusty_openai::openai::OpenAI;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
+
+    let model_id = "text-davinci-003";
+
+    let response = openai.models().retrieve(model_id).await?;
+
+    println!("{}", serde_json::to_string_pretty(&response)?);
+    Ok(())
+}
+```
+
+### Utilties
+
+#### Utility Functions
+
+- **strings_to_json_array(strings: &[String]) -> Value:**  
+  Convert an array of strings to a JSON array.
+
+  ```rust
+  use serde_json::Value;
+
+  fn strings_to_json_array(strings: &[String]) -> Value {
+      serde_json::to_value(strings).unwrap()
+  }
+  ```
+
+- **insert_optional_param(params: &mut Map<String, Value>, key: &str, value: Option<impl Into<Value>>):**  
+  Handle optional parameters for API requests by inserting them into the parameters map if they are `Some`.
+
+  ```rust
+  use serde_json::{Map, Value};
+
+  fn insert_optional_param<K, V>(params: &mut Map<String, Value>, key: K, value: Option<V>)
+  where
+      K: Into<String>,
+      V: Into<Value>,
+  {
+      if let Some(v) = value {
+          params.insert(key.into(), v.into());
+      }
+  }
+  ```
+
+---
 
 ## Getting Started
 
-Before using the SDK, make sure you have the following dependencies added to your `Cargo.toml` file:
+Before using the SDK, ensure you have the necessary dependencies added to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-rusty_openai = "0.1.5"
+rusty_openai = "0.1.6"
 serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json", "multipart"] }
-```
-
-## Usage
-
-First, set up the necessary imports:
-
-```rust
-use rusty_openai::{openai::OpenAI, openai_api::completion::ChatCompletionRequest};
-use serde_json::json;
 ```
 
 ### Initialize OpenAI Client
@@ -28,17 +744,21 @@ use serde_json::json;
 Create an instance of OpenAI with your API key:
 
 ```rust
+use rusty_openai::openai::OpenAI;
+
 #[tokio::main]
 async fn main() {
     let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
 }
 ```
 
-### Generate Chat Completions
-
-To generate chat completions, create a `ChatCompletionRequest` object and call the `create` method from the completions API:
+### Example: Generate a Chat Completion
 
 ```rust
+use serde_json::json;
+use rusty_openai::openai::OpenAI;
+use rusty_openai::openai_api::completion::ChatCompletionRequest;
+
 #[tokio::main]
 async fn main() {
     let openai = OpenAI::new("YOUR_API_KEY", "https://api.openai.com/v1");
@@ -46,513 +766,16 @@ async fn main() {
     let messages = vec![
         json!({
             "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": "Hello"
-                },
-            ]
-        })
+            "content": "Hello, how are you?"
+        }),
     ];
 
     let request = ChatCompletionRequest::new("gpt-4".to_string(), messages)
-        .max_tokens(300)
+        .max_tokens(150)
         .temperature(0.7);
 
-    let chat_response = openai.completions().create(request).await;
-
-    match chat_response {
-        Ok(chat) => println!("{}", json!(chat).to_string()),
+    match openai.completions().create(request).await {
+        Ok(response) => println!("{}", serde_json::to_string_pretty(&response).unwrap()),
         Err(err) => eprintln!("Error: {}", err),
     }
 }
-```
-
-### Endpoints Documentation
-
-#### Completions API
-
-**Generate Chat Completions**
-
-Use the provided `ChatCompletionRequest` to create chat completions:
-
-```rust
-pub async fn create(&self, request: ChatCompletionRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `request`: `ChatCompletionRequest`
-    - `model`: The model name to be used for the chat completion.
-    - `messages`: The history of messages in the conversation.
-    - Fluent setter methods for additional options like `max_tokens`, `temperature`, etc.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-
-#### Assistants API
-
-**Create An Assistant**
-
-Create an assistant with the specified parameters:
-
-```rust
-pub async fn create(&self, request: AssistantRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `request`: `AssistantRequest`
-    - Contains fields like `model`, `name`, `description`, `instructions`, `tools`, `temperature`, etc.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**List Assistants**
-
-List all assistants:
-
-```rust
-pub async fn list(&self, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `limit`: Optional maximum number of assistants to retrieve.
-  - `order`: Optional order to return the results.
-  - `after`: Optional cursor to use for pagination.
-  - `before`: Optional cursor to use for pagination.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Assistant**
-
-Retrieve information about a specific assistant:
-
-```rust
-pub async fn retrieve(&self, assistant_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `assistant_id`: The ID of the assistant to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Modify Assistant**
-
-Modify an existing assistant with the provided parameters:
-
-```rust
-pub async fn modify(&self, assistant_id: &str, request: AssistantRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `assistant_id`: The ID of the assistant to modify.
-  - `request`: `AssistantRequest`
-    - Contains fields like `name`, `description`, `instructions`, `tools`, `temperature`, etc.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Delete Assistant**
-
-Delete an assistant using the provided ID:
-
-```rust
-pub async fn delete(&self, assistant_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `assistant_id`: The ID of the assistant to delete.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-
-#### Threads API
-
-**Create A Thread**
-
-Create a new conversation thread with the specified parameters:
-
-```rust
-pub async fn create(&self, request: ThreadRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `request`: `ThreadRequest`
-    - Contains fields like `messages`, `tool_resources`, and `metadata`.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Thread**
-
-Retrieve information about a specific thread:
-
-```rust
-pub async fn retrieve(&self, thread_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Modify Thread**
-
-Modify an existing thread with the provided parameters:
-
-```rust
-pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to modify.
-  - `request`: `ThreadRequest`
-    - Contains fields like `tool_resources` and `metadata`.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Delete Thread**
-
-Delete a thread using the provided ID:
-
-```rust
-pub async fn delete(&self, thread_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to delete.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Create Message**
-
-Add a message to an existing thread:
-
-```rust
-pub async fn create_message(&self, thread_id: &str, role: &str, content: Value, attachments: Option<Value>, metadata: Option<Value>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to add a message to.
-  - `role`: The role of the sender of the message.
-  - `content`: The content of the message.
-  - `attachments`: Optional attachments for the message.
-  - `metadata`: Optional metadata for the message.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**List Messages**
-
-List all messages in a thread:
-
-```rust
-pub async fn list_messages(&self, thread_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to list messages from.
-  - `limit`: Optional maximum number of messages to retrieve.
-  - `order`: Optional order to return the results.
-  - `after`: Optional cursor to use for pagination.
-  - `before`: Optional cursor to use for pagination.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Message**
-
-Retrieve a specific message from a thread:
-
-```rust
-pub async fn retrieve_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to retrieve the message from.
-  - `message_id`: The ID of the message to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Modify Message**
-
-Modify an existing message in a thread:
-
-```rust
-pub async fn modify_message(&self, thread_id: &str, message_id: &str, metadata: Value) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to modify the message in.
-  - `message_id`: The ID of the message to modify.
-  - `metadata`: The metadata to update in the message.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Delete Message**
-
-Delete a specific message from a thread:
-
-```rust
-pub async fn delete_message(&self, thread_id: &str, message_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to delete the message from.
-  - `message_id`: The ID of the message to delete.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Create Run**
-
-Create a run for a specific assistant in a thread:
-
-```rust
-pub async fn create_run(
-    &self,
-    thread_id: &str,
-    assistant_id: &str,
-    model: Option<&str>,
-    instructions: Option<&str>,
-    additional_instructions: Option<&str>,
-    additional_messages: Option<Vec<Value>>,
-    tools: Option<Vec<Value>>,
-    metadata: Option<Value>,
-    temperature: Option<f64>,
-    top_p: Option<f64>,
-    stream: Option<bool>,
-    max_prompt_tokens: Option<u32>,
-    max_completion_tokens: Option<u32>,
-    truncation_strategy: Option<Value>,
-    tool_choice: Option<Value>,
-    parallel_tool_calls: Option<bool>,
-    response_format: Option<Value>,
-) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to create the run in.
-  - `assistant_id`: The ID of the assistant to use for the run.
-  - Optional parameters including `model`, `instructions`, `additional_instructions`, `additional_messages`, `tools`, `metadata`, `temperature`, `top_p`, `stream`, `max_prompt_tokens`, `max_completion_tokens`, `truncation_strategy`, `tool_choice`, `parallel_tool_calls`, and `response_format`.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**List Runs**
-
-List all runs in a thread:
-
-```rust
-pub async fn list_runs(&self, thread_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to list runs from.
-  - `limit`: Optional maximum number of runs to retrieve.
-  - `order`: Optional order to return the results.
-  - `after`: Optional cursor to use for pagination.
-  - `before`: Optional cursor to use for pagination.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Run**
-
-Retrieve a specific run from a thread:
-
-```rust
-pub async fn retrieve_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to retrieve the run from.
-  - `run_id`: The ID of the run to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Modify Run**
-
-Modify an existing run in a thread:
-
-```rust
-pub async fn modify_run(&self, thread_id: &str, run_id: &str, metadata: Value) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to modify the run in.
-  - `run_id`: The ID of the run to modify.
-  - `metadata`: The metadata to update in the run.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Delete Run**
-
-Delete a specific run from a thread:
-
-```rust
-pub async fn delete_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to delete the run from.
-  - `run_id`: The ID of the run to delete.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Submit Tool Outputs**
-
-Submit tool outputs for a run in a thread:
-
-```rust
-pub async fn submit_tool_outputs(&self, thread_id: &str, run_id: &str, tool_outputs: Vec<Value>, stream: Option<bool>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to submit tool outputs for.
-  - `run_id`: The ID of the run to submit tool outputs for.
-  - `tool_outputs`: The tool outputs to submit.
-  - `stream`: Optional flag to stream the tool outputs.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Cancel Run**
-
-Cancel a specific run in a thread:
-
-```rust
-pub async fn cancel_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to cancel the run in.
-  - `run_id`: The ID of the run to cancel.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**List Run Steps**
-
-List all steps of a specific run in a thread:
-
-```rust
-pub async fn list_run_steps(&self, thread_id: &str, run_id: &str, limit: Option<u32>, order: Option<&str>, after: Option<&str>, before: Option<&str>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to list run steps from.
-  - `run_id`: The ID of the run to list steps from.
-  - `limit`: Optional maximum number of steps to retrieve.
-  - `order`: Optional order to return the results.
-  - `after`: Optional cursor to use for pagination.
-  - `before`: Optional cursor to use for pagination.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Run Step**
-
-Retrieve a specific step from a run in a thread:
-
-```rust
-pub async fn retrieve_run_step(&self, thread_id: &str, run_id: &str, step_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `thread_id`: The ID of the thread to retrieve the run step from.
-  - `run_id`: The ID of the run to retrieve the step from.
-  - `step_id`: The ID of the step to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-
-#### Vectors API
-
-**Create Vector Store**
-
-Create a vector store with the specified parameters:
-
-```rust
-pub async fn create_vector_store(&self, request: VectorStoreRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `request`: `VectorStoreRequest`
-    - Contains fields like `file_ids`, `name`, `expires_after`, `chunking_strategy`, and `metadata`.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**List Vector Stores**
-
-List all vector stores:
-
-```rust
-pub async fn list_vector_stores(&self, limit: Option<u64>, order: Option<String >, after: Option<String>, before: Option<String>) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `limit`: Optional maximum number of vector stores to retrieve.
-  - `order`: Optional order to return the results.
-  - `after`: Optional cursor to use for pagination.
-  - `before`: Optional cursor to use for pagination.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Retrieve Vector Store**
-
-Retrieve information about a specific vector store:
-
-```rust
-pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `vector_store_id`: The ID of the vector store to retrieve.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Modify Vector Store**
-
-Modify an existing vector store with the provided parameters:
-
-```rust
-pub async fn modify_vector_store(&self, vector_store_id: &str, request: VectorStoreRequest) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `vector_store_id`: The ID of the vector store to modify.
-  - `request`: `VectorStoreRequest`
-    - Contains fields like `name`, `expires_after`, and `metadata`.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
-
-**Delete Vector Store**
-
-Delete a vector store using the provided ID:
-
-```rust
-pub async fn delete_vector_store(&self, vector_store_id: &str) -> OpenAIResult<Value>
-```
-
-- **Parameters:**
-  - `vector_store_id`: The ID of the vector store to delete.
-
-- **Returns:**
-  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure.
