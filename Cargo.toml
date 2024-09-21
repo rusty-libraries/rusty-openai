@@ -7,7 +7,7 @@ readme = "README.md"
 homepage = "https://github.com/pleaseful/rusty-openai"
 keywords = ["openai", "ai", "artificial-intelligence", "api"]
 categories = ["api-bindings", "web-programming"]
-exclude = ["rustfmt.toml"]
+exclude = ["docs/", "rustfmt.toml"]
 version = "0.1.5"
 edition = "2021"
 
