@@ -9,14 +9,14 @@ use crate::{
 use reqwest::{multipart::Form, Client};
 use serde::{de::DeserializeOwned, Serialize};
 
-pub struct OpenAI {
+pub struct OpenAI<'a> {
     pub(crate) client: Client,
     authorization: String,
-    pub(crate) base_url: String,
+    base_url: &'a str,
 }
 
-impl OpenAI {
-    pub fn new(api_key: &str, base_url: &str) -> Self {
+impl<'a> OpenAI<'a> {
+    pub fn new(api_key: &str, base_url: &'a str) -> Self {
         let default_base_url = "https://api.openai.com/v1";
 
         Self {
@@ -28,12 +28,11 @@ impl OpenAI {
                 } else {
                     base_url
                 }
-            }
-            .to_string(),
+            },
         }
     }
 
-    pub(crate) async fn get<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
+    pub async fn get<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
         Ok(self
             .client
             .get(format!("{}{url}", self.base_url))
@@ -44,7 +43,7 @@ impl OpenAI {
             .await?)
     }
 
-    pub(crate) async fn post_json<B: Serialize + ?Sized, T: DeserializeOwned>(
+    pub async fn post_json<B: Serialize + ?Sized, T: DeserializeOwned>(
         &self,
         url: &str,
         body: &B,
@@ -61,7 +60,7 @@ impl OpenAI {
             .await?)
     }
 
-    pub(crate) async fn post_form<T: DeserializeOwned>(
+    pub async fn post_form<T: DeserializeOwned>(
         &self,
         url: &str,
         form: Form,
@@ -77,7 +76,7 @@ impl OpenAI {
             .await?)
     }
 
-    pub(crate) async fn delete<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
+    pub async fn delete<T: DeserializeOwned>(&self, url: &str) -> OpenAIResult<T> {
         Ok(self
             .client
             .delete(format!("{}{url}", self.base_url))
@@ -92,8 +91,8 @@ impl OpenAI {
         &self.base_url
     }
 
-    pub fn set_base_url(&mut self, base_url: &str) {
-        self.base_url = base_url.to_string();
+    pub fn set_base_url(&mut self, base_url: &'a str) {
+        self.base_url = base_url;
     }
 
     pub const fn client(&self) -> ClientApi {
