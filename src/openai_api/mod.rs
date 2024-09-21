@@ -8,3 +8,4 @@ pub mod images;
 pub mod moderations;
 pub mod threads;
 pub mod vectors;
+pub mod projects;
