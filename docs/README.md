@@ -88,7 +88,7 @@ pub async fn create(&self, request: ChatCompletionRequest) -> OpenAIResult<Value
     - Fluent setter methods for additional options like `max_tokens`, `temperature`, etc.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 
 #### Assistants API
@@ -106,7 +106,7 @@ pub async fn create(&self, request: AssistantRequest) -> OpenAIResult<Value>
     - Contains fields like `model`, `name`, `description`, `instructions`, `tools`, `temperature`, etc.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **List Assistants**
 
@@ -123,7 +123,7 @@ pub async fn list(&self, limit: Option<u32>, order: Option<&str>, after: Option<
   - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Assistant**
 
@@ -137,7 +137,7 @@ pub async fn retrieve(&self, assistant_id: &str) -> OpenAIResult<Value>
   - `assistant_id`: The ID of the assistant to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Modify Assistant**
 
@@ -153,7 +153,7 @@ pub async fn modify(&self, assistant_id: &str, request: AssistantRequest) -> Ope
     - Contains fields like `name`, `description`, `instructions`, `tools`, `temperature`, etc.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Delete Assistant**
 
@@ -167,7 +167,7 @@ pub async fn delete(&self, assistant_id: &str) -> OpenAIResult<Value>
   - `assistant_id`: The ID of the assistant to delete.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 
 #### Threads API
@@ -185,7 +185,7 @@ pub async fn create(&self, request: ThreadRequest) -> OpenAIResult<Value>
     - Contains fields like `messages`, `tool_resources`, and `metadata`.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Thread**
 
@@ -199,7 +199,7 @@ pub async fn retrieve(&self, thread_id: &str) -> OpenAIResult<Value>
   - `thread_id`: The ID of the thread to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Modify Thread**
 
@@ -215,7 +215,7 @@ pub async fn modify(&self, thread_id: &str, request: ThreadRequest) -> OpenAIRes
     - Contains fields like `tool_resources` and `metadata`.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Delete Thread**
 
@@ -229,7 +229,7 @@ pub async fn delete(&self, thread_id: &str) -> OpenAIResult<Value>
   - `thread_id`: The ID of the thread to delete.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Create Message**
 
@@ -247,7 +247,7 @@ pub async fn create_message(&self, thread_id: &str, role: &str, content: Value, 
   - `metadata`: Optional metadata for the message.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **List Messages**
 
@@ -265,7 +265,7 @@ pub async fn list_messages(&self, thread_id: &str, limit: Option<u32>, order: Op
   - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Message**
 
@@ -280,7 +280,7 @@ pub async fn retrieve_message(&self, thread_id: &str, message_id: &str) -> OpenA
   - `message_id`: The ID of the message to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Modify Message**
 
@@ -296,7 +296,7 @@ pub async fn modify_message(&self, thread_id: &str, message_id: &str, metadata: 
   - `metadata`: The metadata to update in the message.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Delete Message**
 
@@ -311,7 +311,7 @@ pub async fn delete_message(&self, thread_id: &str, message_id: &str) -> OpenAIR
   - `message_id`: The ID of the message to delete.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Create Run**
 
@@ -346,7 +346,7 @@ pub async fn create_run(
   - Optional parameters including `model`, `instructions`, `additional_instructions`, `additional_messages`, `tools`, `metadata`, `temperature`, `top_p`, `stream`, `max_prompt_tokens`, `max_completion_tokens`, `truncation_strategy`, `tool_choice`, `parallel_tool_calls`, and `response_format`.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **List Runs**
 
@@ -364,7 +364,7 @@ pub async fn list_runs(&self, thread_id: &str, limit: Option<u32>, order: Option
   - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Run**
 
@@ -379,7 +379,7 @@ pub async fn retrieve_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<
   - `run_id`: The ID of the run to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Modify Run**
 
@@ -395,7 +395,7 @@ pub async fn modify_run(&self, thread_id: &str, run_id: &str, metadata: Value) -
   - `metadata`: The metadata to update in the run.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Delete Run**
 
@@ -410,7 +410,7 @@ pub async fn delete_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Va
   - `run_id`: The ID of the run to delete.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Submit Tool Outputs**
 
@@ -427,7 +427,7 @@ pub async fn submit_tool_outputs(&self, thread_id: &str, run_id: &str, tool_outp
   - `stream`: Optional flag to stream the tool outputs.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Cancel Run**
 
@@ -442,7 +442,7 @@ pub async fn cancel_run(&self, thread_id: &str, run_id: &str) -> OpenAIResult<Va
   - `run_id`: The ID of the run to cancel.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **List Run Steps**
 
@@ -461,7 +461,7 @@ pub async fn list_run_steps(&self, thread_id: &str, run_id: &str, limit: Option<
   - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Run Step**
 
@@ -477,7 +477,7 @@ pub async fn retrieve_run_step(&self, thread_id: &str, run_id: &str, step_id: &s
   - `step_id`: The ID of the step to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 
 #### Vectors API
@@ -495,7 +495,7 @@ pub async fn create_vector_store(&self, request: VectorStoreRequest) -> OpenAIRe
     - Contains fields like `file_ids`, `name`, `expires_after`, `chunking_strategy`, and `metadata`.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **List Vector Stores**
 
@@ -512,7 +512,7 @@ pub async fn list_vector_stores(&self, limit: Option<u64>, order: Option<String 
   - `before`: Optional cursor to use for pagination.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Retrieve Vector Store**
 
@@ -526,7 +526,7 @@ pub async fn retrieve_vector_store(&self, vector_store_id: &str) -> OpenAIResult
   - `vector_store_id`: The ID of the vector store to retrieve.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Modify Vector Store**
 
@@ -542,7 +542,7 @@ pub async fn modify_vector_store(&self, vector_store_id: &str, request: VectorSt
     - Contains fields like `name`, `expires_after`, and `metadata`.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
 
 **Delete Vector Store**
 
@@ -556,4 +556,4 @@ pub async fn delete_vector_store(&self, vector_store_id: &str) -> OpenAIResult<V
   - `vector_store_id`: The ID of the vector store to delete.
 
 - **Returns:**
-  - [`OpenAIResult<Value>`][OpenAIResult]: A result containing the JSON response as [`serde_json::Value`] on success, or an [`OpenAIError`][crate::error_handling::OpenAIError] on failure. or an `OpenAIError` on failure.
+  - `OpenAIResult<Value>`: A result containing the JSON response as `serde_json::Value` on success, or an `OpenAIError` on failure. or an `OpenAIError` on failure.
