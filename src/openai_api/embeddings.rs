@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`EmbeddingsApi`] struct to interact with the embeddings endpoint of the API.
-pub struct EmbeddingsApi<'a>(pub(crate) &'a OpenAI);
+pub struct EmbeddingsApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 #[derive(Serialize)]
 struct AssistantRequest<'a> {

@@ -4,7 +4,7 @@ use serde_json::Value;
 use tokio::fs;
 
 /// [`AudioApi`] struct to interact with the audio transcription and translation API.
-pub struct AudioApi<'a>(pub(crate) &'a OpenAI);
+pub struct AudioApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 impl<'a> AudioApi<'a> {
     /// Transcribe an audio file using the specified model.

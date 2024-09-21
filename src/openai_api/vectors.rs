@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`VectorsApi`] struct to interact with vector stores API endpoints.
-pub struct VectorsApi<'a>(pub(crate) &'a OpenAI);
+pub struct VectorsApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 /// Struct representing a request for vector store creation.
 #[derive(Default, Serialize)]

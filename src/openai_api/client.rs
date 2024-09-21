@@ -2,7 +2,7 @@ use crate::{error_handling::OpenAIResult, openai::OpenAI};
 use serde_json::Value;
 
 /// [`ClientApi`] struct to interact with the models endpoint of the API.
-pub struct ClientApi<'a>(pub(crate) &'a OpenAI);
+pub struct ClientApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 impl<'a> ClientApi<'a> {
     /// Fetch the list of available models from the API.

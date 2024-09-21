@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`CompletionsApi`] struct to interact with the chat completions endpoint of the API.
-pub struct CompletionsApi<'a>(pub(crate) &'a OpenAI);
+pub struct CompletionsApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 /// Struct representing a request for chat completions.
 #[derive(Default, Serialize)]

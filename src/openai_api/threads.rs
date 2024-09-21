@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 
 /// [`ThreadsApi`] struct to interact with thread management endpoints of the API.
-pub struct ThreadsApi<'a>(pub(crate) &'a OpenAI);
+pub struct ThreadsApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 /// Struct representing a request to create a thread.
 #[derive(Default, Serialize)]

@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`FineTuningApi`] struct to interact with the fine-tuning endpoints of the API.
-pub struct FineTuningApi<'a>(pub(crate) &'a OpenAI);
+pub struct FineTuningApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 #[derive(Serialize)]
 struct FineTuningRequest<'a> {

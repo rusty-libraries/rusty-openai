@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`ModerationApi`] struct to interact with the moderation endpoint of the API.
-pub struct ModerationApi<'a>(pub(crate) &'a OpenAI);
+pub struct ModerationApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 #[derive(Serialize)]
 struct ModerationRequest<'a> {

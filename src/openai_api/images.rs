@@ -5,7 +5,7 @@ use serde_json::Value;
 use tokio::fs;
 
 /// [`ImagesApi`] struct to interact with the image generation, editing, and variation endpoints of the API.
-pub struct ImagesApi<'a>(pub(crate) &'a OpenAI);
+pub struct ImagesApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 #[derive(Serialize)]
 struct GenerateImageRequest<'a> {

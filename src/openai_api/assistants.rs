@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 /// [`AssistantsApi`] struct to interact with the assistants endpoints of the API.
-pub struct AssistantsApi<'a>(pub(crate) &'a OpenAI);
+pub struct AssistantsApi<'a>(pub(crate) &'a OpenAI<'a>);
 
 /// Struct representing a request for creating or modifying an assistant.
 #[derive(Default, Serialize)]
