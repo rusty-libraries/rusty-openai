@@ -4,6 +4,7 @@ use crate::{
         assistants::AssistantsApi, audio::AudioApi, client::ClientApi, completion::CompletionsApi,
         embeddings::EmbeddingsApi, fine_tuning::FineTuningApi, images::ImagesApi,
         moderations::ModerationApi, threads::ThreadsApi, vectors::VectorsApi,
+        projects::ProjectsApi,
     },
 };
 use reqwest::{multipart::Form, Client};
@@ -129,5 +130,9 @@ impl<'a> OpenAI<'a> {
 
     pub const fn vectors(&self) -> VectorsApi {
         VectorsApi(self)
+    }
+
+    pub const fn projects(&self) -> ProjectsApi {
+        ProjectsApi(self)
     }
 }
